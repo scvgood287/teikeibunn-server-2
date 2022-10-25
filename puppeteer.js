@@ -1,6 +1,6 @@
 const puppeteer = require("puppeteer");
 
-export const crawlFansignInfo = async (url) => {
+const crawlFansignInfo = async (url) => {
   const browser = await puppeteer.launch({
     args: [
       "--no-sandbox",
