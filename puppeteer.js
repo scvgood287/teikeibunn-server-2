@@ -2,10 +2,11 @@ const puppeteer = require("puppeteer");
 
 const crawlFansignInfo = async (url) => {
   const browser = await puppeteer.launch({
+    headless: false,
     args: [
       "--no-sandbox",
       "--disable-setuid-sandbox",
-      "--headless",
+      // "--headless",
       "--disable-gpu",
     ],
   });
@@ -13,7 +14,7 @@ const crawlFansignInfo = async (url) => {
   try {
     const page = await browser.newPage();
 
-    await page.goto(url);
+    await page.goto(url, { waitUntil: "domcontentloaded" });
 
     const title = await page.evaluate(
       () => document.getElementsByClassName("skinArticleTitle")[0].innerText
@@ -32,19 +33,23 @@ const crawlFansignInfo = async (url) => {
     const isMeet = fansignType.includes("対面");
     const isVideo = fansignType.includes("ビデオ");
     const isLuckyDraw = fansignType.includes("ラキドロ");
+
     const shop = await page.evaluate(() =>
       [...document.getElementsByTagName("p")]
         .filter((p) => p.innerText.includes("販売店"))[0]
         .innerText.split("販売店")[1]
         .replace(/ |　|:|：/g, "")
     );
+
     const [cdPrice, agencyFee] = await page.evaluate(() => {
       const prices = [
         ...document.querySelectorAll('[style="font-weight:bold;"]'),
       ]
         .filter((el) => el.innerText.match(/[０-９]/g))
         .map((el) => el.innerText);
-      const agencyFeeIndex = prices.findIndex((el) => el.includes("円")) + 1;
+      const agencyFeeIndex = prices.findIndex((el) =>
+        el.includes("代行手数料")
+      );
 
       return [
         prices.slice(0, agencyFeeIndex).join(""),

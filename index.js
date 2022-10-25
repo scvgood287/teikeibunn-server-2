@@ -5,9 +5,11 @@ const port = process.env.PORT || 443;
 
 app.get("/api/fansign/info", async (req, res, next) => {
   try {
-    const fansignInfo = await crawlFansignInfo(req.query.url);
+    const { url } = req.query;
+    const fansignInfo = await crawlFansignInfo(url);
     res.send(fansignInfo);
   } catch (err) {
+    console.log(err);
     res.status(400);
   }
 });
