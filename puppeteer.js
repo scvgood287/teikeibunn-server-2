@@ -2,11 +2,10 @@ const puppeteer = require("puppeteer");
 
 const crawlFansignInfo = async (url) => {
   const browser = await puppeteer.launch({
-    headless: false,
     args: [
       "--no-sandbox",
       "--disable-setuid-sandbox",
-      // "--headless",
+      "--headless",
       "--disable-gpu",
     ],
   });
