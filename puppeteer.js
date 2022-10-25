@@ -1,6 +1,6 @@
 const puppeteer = require("puppeteer");
 
-const crawlFansignInfo = async (url) => {
+export const crawlFansignInfo = async (url) => {
   const browser = await puppeteer.launch({
     args: [
       "--no-sandbox",
@@ -15,11 +15,16 @@ const crawlFansignInfo = async (url) => {
 
     await page.goto(url);
 
-    const text = await page.evaluate(
+    const title = await page.evaluate(
       () => document.getElementsByClassName("skinArticleTitle")[0].innerText
     );
-    const [group, fansignType, ...splitedText] = text.split(" ");
-    const eventDate = splitedText.filter(
+    const splitedTitle = title.split(" ");
+    const fansignTypeIndex = splitedTitle.findIndex((el) => el.includes("!"));
+    const group = splitedTitle.slice(0, fansignTypeIndex).join(" ");
+    const fansignType = splitedTitle[fansignTypeIndex];
+    const rest = splitedTitle.slice(fansignTypeIndex + 1);
+
+    const eventDate = rest.filter(
       (word) =>
         word.includes("/") &&
         word.split("/").every((letter) => !isNaN(Number(letter)))
@@ -31,20 +36,27 @@ const crawlFansignInfo = async (url) => {
       [...document.getElementsByTagName("p")]
         .filter((p) => p.innerText.includes("販売店"))[0]
         .innerText.split("販売店")[1]
-        .replace(/ |　/g, "")
-        .replace(":", "")
+        .replace(/ |　|:|：/g, "")
     );
-    const [cdPrice, agencyFee] = await page.evaluate(() =>
-      [...document.querySelectorAll('[style="font-weight:bold;"]')]
+    const [cdPrice, agencyFee] = await page.evaluate(() => {
+      const prices = [
+        ...document.querySelectorAll('[style="font-weight:bold;"]'),
+      ]
         .filter((el) => el.innerText.match(/[０-９]/g))
-        .map((el) =>
-          el.innerText
-            .match(/[０-９]+/g)[0]
-            .replace(/[０-９]/g, (s) =>
-              String.fromCharCode(s.charCodeAt(0) - 0xfee0)
-            )
-        )
-    );
+        .map((el) => el.innerText);
+      const agencyFeeIndex = prices.findIndex((el) => el.includes("円")) + 1;
+
+      return [
+        prices.slice(0, agencyFeeIndex).join(""),
+        prices.slice(agencyFeeIndex).join(""),
+      ].map((price) =>
+        price
+          .match(/[０-９]+/g)[0]
+          .replace(/[０-９]/g, (s) =>
+            String.fromCharCode(s.charCodeAt(0) - 0xfee0)
+          )
+      );
+    });
 
     return {
       eventDate,
@@ -59,13 +71,10 @@ const crawlFansignInfo = async (url) => {
       agencyFee,
     };
   } catch (err) {
-    console.error(err);
     throw new Error(err);
   } finally {
-    // await browser.close();
+    await browser.close();
   }
 };
 
 module.exports = { crawlFansignInfo };
-
-// 이벤트 날짜, 그룹, 대면인지 영통인지 럭키드로인지, 샵, cd가격, 대행수수료
