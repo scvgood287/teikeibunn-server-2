@@ -18,8 +18,10 @@ const crawlFansignInfo = async (url) => {
     const title = await page.evaluate(
       () => document.getElementsByClassName("skinArticleTitle")[0].innerText
     );
-    const splitedTitle = title.split(" ");
-    const fansignTypeIndex = splitedTitle.findIndex((el) => el.includes("!"));
+    const splitedTitle = title.split(/ |　/g);
+    const fansignTypeIndex = splitedTitle.findIndex(
+      (el) => el.includes("!") || el.includes("！")
+    );
     const group = splitedTitle.slice(0, fansignTypeIndex).join(" ");
     const fansignType = splitedTitle[fansignTypeIndex];
     const rest = splitedTitle.slice(fansignTypeIndex + 1);
