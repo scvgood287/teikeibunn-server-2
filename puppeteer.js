@@ -20,7 +20,7 @@ const crawlFansignInfo = async (url) => {
     );
     const splitedTitle = title.split(/ |　/g);
     const fansignTypeIndex = splitedTitle.findIndex(
-      (el) => el.includes("!") || el.includes("！")
+      (el) => el.includes("!") || el.includes("！") || el.includes("サイン会")
     );
     const group = splitedTitle.slice(0, fansignTypeIndex).join(" ");
     const fansignType = splitedTitle[fansignTypeIndex];
