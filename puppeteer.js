@@ -43,9 +43,7 @@ const crawlFansignInfo = async (url) => {
     );
 
     const [cdPrice, agencyFee] = await page.evaluate(() => {
-      const prices = [
-        ...document.querySelectorAll('[style="font-weight:bold;"]'),
-      ]
+      const prices = [...document.querySelectorAll('[style="color:#0000ff;"]')]
         .filter((el) => el.innerText.match(/[０-９]/g))
         .map((el) => el.innerText);
       const agencyFeeIndex = prices.findIndex((el) =>
@@ -77,7 +75,7 @@ const crawlFansignInfo = async (url) => {
       agencyFee,
     };
   } catch (err) {
-    throw new Error(err);
+    throw Error(err);
   } finally {
     await browser.close();
   }
