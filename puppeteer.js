@@ -42,25 +42,24 @@ const crawlFansignInfo = async (url) => {
         .replace(/ |　|:|：/g, "")
     );
 
-    const [cdPrice, agencyFee] = await page.evaluate(() => {
-      const prices = [...document.querySelectorAll('[style="color:#0000ff;"]')]
-        .filter((el) => el.innerText.match(/[０-９]/g))
-        .map((el) => el.innerText);
-      const agencyFeeIndex = prices.findIndex((el) =>
-        el.includes("代行手数料")
-      );
-
-      return [
-        prices.slice(0, agencyFeeIndex).join(""),
-        prices.slice(agencyFeeIndex).join(""),
-      ].map((price) =>
-        price
-          .match(/[０-９]+/g)[0]
-          .replace(/[０-９]/g, (s) =>
-            String.fromCharCode(s.charCodeAt(0) - 0xfee0)
-          )
-      );
-    });
+    const [prices, agencyFees] = await page.evaluate(() =>
+      [...document.querySelectorAll('[style="color:#0000ff;"]')]
+        .map((el) => el.innerText)
+        .filter((text) => text.match(/[０-９]+円/g))
+        .join("")
+        .split("代行手数料")
+        .map((text) =>
+          text
+            .match(/[０-９]+円/g)
+            .map((price) =>
+              price
+                .replace("円", "")
+                .replace(/[０-９]/g, (s) =>
+                  String.fromCharCode(s.charCodeAt(0) - 0xfee0)
+                )
+            )
+        )
+    );
 
     return {
       eventDate,
@@ -71,8 +70,8 @@ const crawlFansignInfo = async (url) => {
         isLuckyDraw,
       },
       shop,
-      cdPrice,
-      agencyFee,
+      prices,
+      agencyFees,
     };
   } catch (err) {
     throw Error(err);
