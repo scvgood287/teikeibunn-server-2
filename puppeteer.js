@@ -45,7 +45,6 @@ const crawlFansignInfo = async (url) => {
     const [prices, agencyFees] = await page.evaluate(() =>
       [...document.querySelectorAll('[style="color:#0000ff;"]')]
         .map((el) => el.innerText)
-        .filter((text) => text.match(/[０-９]+円/g))
         .join("")
         .split("代行手数料")
         .map((text) =>
