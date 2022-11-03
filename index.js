@@ -1,12 +1,12 @@
-const express = require("express");
-const cors = require("cors");
-const { crawlFansignInfo } = require("./puppeteer");
+const express = require('express');
+const cors = require('cors');
+const { crawlFansignInfo } = require('./utils');
 const app = express();
 const port = process.env.PORT || 443;
 
 app.use(cors());
 
-app.get("/api/fansign/info", async (req, res, next) => {
+app.get('/api/fansign/info', async (req, res, next) => {
   try {
     const { url } = req.query;
     const fansignInfo = await crawlFansignInfo(url);
@@ -17,4 +17,4 @@ app.get("/api/fansign/info", async (req, res, next) => {
   }
 });
 
-app.listen(port, () => console.log("server listening on port " + port));
+app.listen(port, () => console.log('server listening on port ' + port));
