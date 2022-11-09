@@ -34,7 +34,7 @@ const crawlFansignInfo = async url => {
     );
 
     const [prices, agencyFees] = await page.evaluate(() =>
-      [...document.querySelectorAll('[style^="color"]')]
+      [...document.querySelectorAll('[style*="color"]')]
         .map(el => el.innerText)
         .join('')
         .split('代行手数料')
