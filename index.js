@@ -9,7 +9,13 @@ app.use(cors());
 app.get('/api/fansign/info', async (req, res, next) => {
   try {
     const { url } = req.query;
+
+    if (!url.includes('ameblo.jp/zoa959595')) {
+      throw new Error('Invalid URL');
+    }
+
     const fansignInfo = await crawlFansignInfo(url);
+
     res.send(fansignInfo);
   } catch (err) {
     console.log(err);
