@@ -51,14 +51,14 @@ const crawlFansignInfo = async url => {
         .map(text => text.match(/[０-９]+円/g).map(price => price.replace('円', '').replace(/[０-９]/g, s => String.fromCharCode(s.charCodeAt(0) - 0xfee0)))),
     );
 
-    return {
+    return trimAllForObject({
       eventDate,
       group,
       fansignType,
       shop,
       prices,
       agencyFees,
-    };
+    });
   } catch (err) {
     throw Error(err);
   } finally {
