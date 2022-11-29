@@ -1,10 +1,20 @@
 const puppeteer = require('puppeteer');
+const { fansignTypes } = require('./constants');
 
-const fansignTypes = {
-  ビデオ: 'video',
-  対面: 'meet',
-  ラキドロ: 'luckyDraw',
-};
+const isPrimitive = value => value === null || !(typeof value == 'object' || typeof value == 'function');
+
+const trimAll = value => (typeof value === 'string' ? value.replace(/(\s*)/g, '') : value);
+
+const trimAllForObject = obj =>
+  isPrimitive(obj)
+    ? typeof obj === 'string'
+      ? obj.trim()
+      : obj
+    : typeof obj === 'object'
+    ? Array.isArray(obj)
+      ? obj.map(trimAllForObject)
+      : Object.entries(obj).reduce((acc, [key, value]) => ({ ...acc, [key]: trimAllForObject(value) }), {})
+    : obj;
 
 const crawlFansignInfo = async url => {
   const browser = await puppeteer.launch({
@@ -30,7 +40,7 @@ const crawlFansignInfo = async url => {
       [...document.getElementsByTagName('p')]
         .filter(p => p.innerText.includes('販売店'))[0]
         .innerText.split('販売店')[1]
-        .replace(/ |　|:|：/g, ''),
+        .replace(/:|：/g, ''),
     );
 
     const [prices, agencyFees] = await page.evaluate(() =>
@@ -56,4 +66,4 @@ const crawlFansignInfo = async url => {
   }
 };
 
-module.exports = { crawlFansignInfo };
+module.exports = { crawlFansignInfo, isPrimitive, trimAll, trimAllForObject };
