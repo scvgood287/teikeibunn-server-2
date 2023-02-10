@@ -1,5 +1,5 @@
 const puppeteer = require('puppeteer');
-const { fansignTypes, fansignConfigs, ONE_ON_ONE, FANSIGN_INFOS } = require('./constants');
+const { fansignTypes, fansignConfigs, FANSIGN_INFOS, FANSIGN_TYPE_DETAIL_MARK } = require('./constants');
 
 const isPrimitive = value => value === null || !(typeof value == 'object' || typeof value == 'function');
 
@@ -59,7 +59,8 @@ const crawl = async page => {
   }));
   const ptexts = ps.join('');
   const isNewTitle = checkNewTitle(title);
-  const isNew = isNewTitle && ptexts.includes('');
+  const isNewMain = ptexts.includes(FANSIGN_TYPE_DETAIL_MARK);
+  const isNew = isNewTitle && isNewMain;
   const fansignInfoRegex = new RegExp(
     Object.values(FANSIGN_INFOS)
       .reduce((regex, INFO) => regex + `(${INFO})|`, '')
@@ -76,6 +77,12 @@ const crawl = async page => {
   const isSeasonsGreetings = title.includes('シーズン') || title.toUpperCase().includes('SEASON');
   const eventDateOfTitle = rest.filter(word => word.includes('/') && word.split('/').every(letter => !isNaN(Number(letter))))[0];
   const fansignType = fansignTypes[fansignTypeText];
+  const startOfFansignTypeDetail = ptexts.indexOf(FANSIGN_TYPE_DETAIL_MARK);
+  const fansignTypeDetailText = isNewMain
+    ? ptexts.slice(startOfFansignTypeDetail + 1, ptexts.indexOf(FANSIGN_TYPE_DETAIL_MARK, startOfFansignTypeDetail + 1)).trim()
+    : '';
+  const fansignTypeDetail =
+    fansignTypes[Object.keys(fansignTypes).filter(fansignType => fansignTypeDetailText.includes(fansignType))[0]] || fansignTypeDetailText;
   const fansignConfig =
     fansignTypeText === 'ビデオ' || fansignTypeText === '対面' || fansignTypeText === 'ヨントン'
       ? Object.entries(fansignConfigs).filter(([, words]) => words.some(word => title.includes(word)))[0]?.[0] || ''
@@ -109,6 +116,7 @@ const crawl = async page => {
     fansignConfig,
     prices,
     agencyFees,
+    fansignTypeDetail,
     ...Object.entries(innerTexts).reduce((details, [info, dateString]) => {
       details[info] = dateStringToDate(dateString);
 
