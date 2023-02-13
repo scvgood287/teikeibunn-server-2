@@ -34,7 +34,7 @@ const FANSIGN_INFOS = {
 
 const versions = {
   server: '1.1.8',
-  client: '1.2.5',
+  client: '1.2.6',
 };
 
 module.exports = {
