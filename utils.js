@@ -49,10 +49,16 @@ const dateStringToDate = dateString => {
     };
   }
 
-  return dateString;
+  return {
+    year: 0,
+    month: 0,
+    day: 0,
+    hour: 0,
+    minutes: 0,
+  };
 };
 
-const crawl = async page => {
+const crawlAmeblo = async page => {
   const { title, ps } = await page.evaluate(() => ({
     title: document.getElementsByClassName('skinArticleTitle')[0].innerText,
     ps: [...document.getElementsByTagName('p')].map(p => p.innerText),
@@ -75,7 +81,7 @@ const crawl = async page => {
   const rest = splitedTitle.slice(fansignTypeIndex + 1);
 
   const isSeasonsGreetings = title.includes('シーズン') || title.toUpperCase().includes('SEASON');
-  const eventDateOfTitle = rest.filter(word => word.includes('/') && word.split('/').every(letter => !isNaN(Number(letter))))[0];
+  const eventDateOfTitle = rest.filter(word => word.includes('/') && word.split('/').every(letter => !isNaN(Number(letter))))[0] || '';
   const fansignType = fansignTypes[fansignTypeText];
   const startOfFansignTypeDetail = ptexts.indexOf(FANSIGN_TYPE_DETAIL_MARK);
   const fansignTypeDetailText = isNewMain
@@ -89,13 +95,13 @@ const crawl = async page => {
       : '';
 
   const splitedPs = fullNumberToHalfNumber(ptexts).split(fansignInfoRegex).filter(Boolean);
-  const innerTexts = Object.entries(FANSIGN_INFOS).reduce((texts, [info, infoText]) => {
+  const { shop, ...dates } = Object.entries(FANSIGN_INFOS).reduce((texts, [info, infoText]) => {
     const infoIndex = splitedPs.findIndex(innerText => innerText.includes(infoText)) + 1;
     texts[info] = infoIndex ? splitedPs[infoIndex].trim().split(/◆|場所/g).filter(Boolean)[0].split('👉').filter(Boolean)[0].replace(/:|：/g, '') : '';
 
     return texts;
   }, {});
-  innerTexts.eventDeadline = innerTexts.eventDeadline.split(/~|〜/g)[1];
+  dates.eventDeadline = dates.eventDeadline.split(/~|〜/g)[1];
 
   const [prices, agencyFees] = await page.evaluate(() =>
     [...document.querySelectorAll('[style*="color"]')]
@@ -117,7 +123,8 @@ const crawl = async page => {
     prices,
     agencyFees,
     fansignTypeDetail,
-    ...Object.entries(innerTexts).reduce((details, [info, dateString]) => {
+    shop,
+    ...Object.entries(dates).reduce((details, [info, dateString]) => {
       details[info] = dateStringToDate(dateString);
 
       return details;
@@ -135,7 +142,7 @@ const crawlFansignInfo = async url => {
 
     await page.goto(url, { waitUntil: 'domcontentloaded' });
 
-    return trimAllForObject(await crawl(page));
+    return trimAllForObject(await crawlAmeblo(page));
   } catch (err) {
     throw Error(err);
   } finally {

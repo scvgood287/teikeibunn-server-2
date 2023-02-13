@@ -32,6 +32,11 @@ const FANSIGN_INFOS = {
   winnerAnnouncement: WINNER_ANNOUNCEMENT,
 };
 
+const versions = {
+  server: '1.1.8',
+  client: '1.2.5',
+};
+
 module.exports = {
   fansignTypes,
   fansignConfigs,
@@ -45,4 +50,5 @@ module.exports = {
   DEPOSIT_DEADLINE,
   WINNER_ANNOUNCEMENT,
   FANSIGN_INFOS,
+  versions,
 };
