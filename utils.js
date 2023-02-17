@@ -32,7 +32,7 @@ const checkNewTitle = title => {
 const fullNumberToHalfNumber = fullNumber => fullNumber.replace(/[０-９]/g, s => String.fromCharCode(s.charCodeAt(0) - 0xfee0));
 
 const dateStringToDate = dateString => {
-  if (dateString.match(/年|月|日/g)) {
+  if (dateString?.match(/年|月|日/g)) {
     const [date, _day, time] = dateString.replace(/\s/g, '').split(/\(|\)/g);
     const [year, month, day] = date.split(/年|月|日/g).map(Number);
     const hourIndex = time.match(/時/)?.index;
