@@ -7,6 +7,8 @@ const fansignTypes = {
   SHOWCASE: 'showcase',
 };
 
+const fansignTypeKeys = Object.keys(fansignTypes);
+
 const ONE_ON_ONE = 'oneOnOne';
 const UNIT = 'unit';
 const ALL = 'all';
@@ -33,13 +35,22 @@ const FANSIGN_INFOS = {
 };
 
 const versions = {
-  server: '1.1.9',
-  client: '1.2.9',
+  server: '1.2.0',
+  client: '1.3.0',
 };
+
+const fansignInfoRegex = new RegExp(
+  Object.values(FANSIGN_INFOS)
+    .reduce((regex, INFO) => regex + `(${INFO})|`, '')
+    .slice(0, -1),
+  'g',
+);
 
 module.exports = {
   fansignTypes,
   fansignConfigs,
+  fansignInfoRegex,
+  fansignTypeKeys,
   ONE_ON_ONE,
   UNIT,
   ALL,

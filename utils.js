@@ -1,5 +1,5 @@
 const puppeteer = require('puppeteer');
-const { fansignTypes, fansignConfigs, FANSIGN_INFOS, FANSIGN_TYPE_DETAIL_MARK } = require('./constants');
+const { fansignTypes, fansignConfigs, fansignInfoRegex, fansignTypeKeys, FANSIGN_INFOS, FANSIGN_TYPE_DETAIL_MARK } = require('./constants');
 
 const isPrimitive = value => value === null || !(typeof value == 'object' || typeof value == 'function');
 
@@ -67,17 +67,11 @@ const crawlAmeblo = async page => {
   const isNewTitle = checkNewTitle(title);
   const isNewMain = ptexts.includes(FANSIGN_TYPE_DETAIL_MARK);
   const isNew = isNewTitle && isNewMain;
-  const fansignInfoRegex = new RegExp(
-    Object.values(FANSIGN_INFOS)
-      .reduce((regex, INFO) => regex + `(${INFO})|`, '')
-      .slice(0, -1),
-    'g',
-  );
 
   const splitedTitle = title.split(/\s/g);
   const fansignTypeIndex = splitedTitle.findIndex(el => (isNewTitle ? checkNewTitle(el) : el.includes('!') || el.includes('！') || el.includes('サイン会')));
   const group = splitedTitle.slice(0, fansignTypeIndex).join(' ');
-  const fansignTypeText = Object.keys(fansignTypes).reduce((acc, curr) => (splitedTitle[fansignTypeIndex].includes(curr) ? curr : acc), 'ヨントン');
+  const fansignTypeText = fansignTypeKeys.reduce((acc, curr) => (splitedTitle[fansignTypeIndex].includes(curr) ? curr : acc), 'ヨントン');
   const rest = splitedTitle.slice(fansignTypeIndex + 1);
 
   const isSeasonsGreetings = title.includes('シーズン') || title.toUpperCase().includes('SEASON');
@@ -87,8 +81,7 @@ const crawlAmeblo = async page => {
   const fansignTypeDetailText = isNewMain
     ? ptexts.slice(startOfFansignTypeDetail + 1, ptexts.indexOf(FANSIGN_TYPE_DETAIL_MARK, startOfFansignTypeDetail + 1)).trim()
     : '';
-  const fansignTypeDetail =
-    fansignTypes[Object.keys(fansignTypes).filter(fansignType => fansignTypeDetailText.includes(fansignType))[0]] || fansignTypeDetailText;
+  const fansignTypeDetail = fansignTypes[fansignTypeKeys.filter(fansignType => fansignTypeDetailText.includes(fansignType))[0]] || fansignTypeDetailText;
   const fansignConfig =
     fansignTypeText === 'ビデオ' || fansignTypeText === '対面' || fansignTypeText === 'ヨントン'
       ? Object.entries(fansignConfigs).filter(([, words]) => words.some(word => title.includes(word)))[0]?.[0] || ''
@@ -103,15 +96,9 @@ const crawlAmeblo = async page => {
   }, {});
   dates.eventDeadline = dates.eventDeadline.split(/~|〜/g)[1];
 
-  const [prices, agencyFees] = await page.evaluate(() =>
-    [...document.querySelectorAll('[style*="color"]')]
-      .map(el => el.innerText)
-      .join('')
-      .split('代行手数料')
-      .map(text =>
-        text.match(/([０-９]|[0-9])+円/g).map(price => price.replace('円', '').replace(/[０-９]/g, s => String.fromCharCode(s.charCodeAt(0) - 0xfee0))),
-      ),
-  );
+  const [prices, agencyFees] = ptexts
+    .split('代行手数料')
+    .map(text => text.match(/([０-９]|[0-9])+円/g).map(price => fullNumberToHalfNumber(price.replace('円', ''))));
 
   return {
     isNew,
