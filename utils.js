@@ -1,5 +1,5 @@
 const puppeteer = require('puppeteer');
-const { fansignTypes, fansignConfigs, fansignInfoRegex, fansignTypeKeys, FANSIGN_INFOS, FANSIGN_TYPE_DETAIL_MARK } = require('./constants');
+const { fansignTypes, fansignConfigs, fansignInfoRegex, fansignTypeKeys, FANSIGN_INFOS, FANSIGN_TYPE_DETAIL_MARK, versions } = require('./constants');
 
 const isPrimitive = value => value === null || !(typeof value == 'object' || typeof value == 'function');
 
@@ -101,6 +101,7 @@ const crawlAmeblo = async page => {
     .map(text => text.match(/([０-９]|[0-9])+円/g).map(price => fullNumberToHalfNumber(price.replace('円', ''))));
 
   return {
+    serverSideVersions: versions,
     isNew,
     isSeasonsGreetings,
     eventDateOfTitle,
