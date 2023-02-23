@@ -1,5 +1,14 @@
 const puppeteer = require('puppeteer');
-const { fansignTypes, fansignConfigs, fansignInfoRegex, fansignTypeKeys, FANSIGN_INFOS, FANSIGN_TYPE_DETAIL_MARK, versions } = require('./constants');
+const {
+  fansignTypes,
+  fansignConfigs,
+  fansignInfoRegex,
+  fansignTypeKeys,
+  FANSIGN_INFOS,
+  FANSIGN_TYPE_DETAIL_MARK,
+  versions,
+  normalTypes,
+} = require('./constants');
 
 const isPrimitive = value => value === null || !(typeof value == 'object' || typeof value == 'function');
 
@@ -81,7 +90,11 @@ const crawlAmeblo = async page => {
   const fansignTypeDetailText = isNewMain
     ? ptexts.slice(startOfFansignTypeDetail + 1, ptexts.indexOf(FANSIGN_TYPE_DETAIL_MARK, startOfFansignTypeDetail + 1)).trim()
     : '';
-  const fansignTypeDetail = fansignTypes[fansignTypeKeys.filter(fansignType => fansignTypeDetailText.includes(fansignType))[0]] || fansignTypeDetailText;
+  const fansignTypeDetailTextToUpperCase = fansignTypeDetailText.toUpperCase();
+  const fansignTypeDetail =
+    !fansignTypeDetailTextToUpperCase.includes('SP') && normalTypes.some(type => fansignTypeDetailTextToUpperCase.includes(type))
+      ? fansignType
+      : fansignTypeDetailText;
   const fansignConfig =
     fansignTypeText === 'ビデオ' || fansignTypeText === '対面' || fansignTypeText === 'ヨントン'
       ? Object.entries(fansignConfigs).filter(([, words]) => words.some(word => title.includes(word)))[0]?.[0] || ''

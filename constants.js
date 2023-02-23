@@ -8,6 +8,9 @@ const fansignTypes = {
 };
 
 const fansignTypeKeys = Object.keys(fansignTypes);
+const normalTypes = Object.entries(fansignTypes)
+  .reduce((acc, curr) => [...acc, ...curr], ['CALL'])
+  .map(text => text.toUpperCase());
 
 const ONE_ON_ONE = 'oneOnOne';
 const UNIT = 'unit';
@@ -35,7 +38,7 @@ const FANSIGN_INFOS = {
 };
 
 const versions = {
-  server: '1.2.1',
+  server: '1.2.2',
   client: '1.3.1',
 };
 
@@ -62,4 +65,5 @@ module.exports = {
   WINNER_ANNOUNCEMENT,
   FANSIGN_INFOS,
   versions,
+  normalTypes,
 };
