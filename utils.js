@@ -29,18 +29,9 @@ const trimAllForObject = obj =>
       : Object.entries(obj).reduce((acc, [key, value]) => ({ ...acc, [key]: trimAllForObject(value) }), {})
     : obj;
 
-const checkNewTitle = title => {
-  const titleToUpperCase = title.toUpperCase();
-
-  return (
-    titleToUpperCase.includes('イベント') &&
-    (titleToUpperCase.includes('対面') ||
-      titleToUpperCase.includes('ヨントン') ||
-      titleToUpperCase.includes('特典') ||
-      titleToUpperCase.includes('ラキドロ') ||
-      titleToUpperCase.includes('SHOWCASE'))
-  );
-};
+const checkNewTitle = title =>
+  title.includes('イベント') &&
+  (title.includes('対面') || title.includes('ヨントン') || title.includes('特典') || title.includes('ラキドロ') || title.includes('SHOWCASE'));
 
 const fullNumberToHalfNumber = fullNumber => fullNumber.replace(/[０-９]/g, s => String.fromCharCode(s.charCodeAt(0) - 0xfee0));
 
@@ -79,7 +70,7 @@ const oldAnalyze = async ({ title, ptexts }) => {
   const group = splitedTitle.slice(0, fansignTypeIndex).join(' ');
   const fansignTypeText = fansignTypeKeys.reduce((acc, curr) => (splitedTitle[fansignTypeIndex].includes(curr) ? curr : acc), 'ヨントン');
 
-  const isSeasonsGreetings = title.includes('シーズン') || title.toUpperCase().includes('SEASON');
+  const isSeasonsGreetings = title.includes('シーズン') || title.includes('SEASON');
   const eventDateOfTitle =
     splitedTitle.slice(fansignTypeIndex + 1).filter(word => word.includes('/') && word.split('/').every(letter => !isNaN(Number(letter))))[0] || '';
 
@@ -135,7 +126,7 @@ const crawlFansignInfo = async url => {
     await page.goto(url, { waitUntil: 'domcontentloaded' });
 
     const { title, ps } = await page.evaluate(() => ({
-      title: document.getElementsByClassName('skinArticleTitle')[0].innerText,
+      title: document.getElementsByClassName('skinArticleTitle')[0].innerText.toUpperCase(),
       ps: [...document.getElementsByTagName('p')].map(p => p.innerText),
     }));
     const isNewTitle = title.includes(SPLIT_MARK);
