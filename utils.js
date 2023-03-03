@@ -142,17 +142,6 @@ const crawlFansignInfo = async url => {
     const ptexts = fullNumberToHalfNumber(ps.join(''));
     const splitedPs = ptexts.split(fansignInfoRegex).filter(Boolean);
 
-    console.log(
-      Object.entries(FANSIGN_INFOS).reduce((texts, [info, infoText]) => {
-        const infoIndex = splitedPs.findIndex(innerText => innerText.includes(infoText)) + 1;
-        texts[info] = !!infoIndex
-          ? splitedPs[infoIndex].replace(/\s/g, '').split(/◆|場所/g).filter(Boolean)[0].split('👉').filter(Boolean)[0].replace(/:|：/g, '')
-          : '';
-
-        return texts;
-      }, {}),
-    );
-
     const [prices, agencyFees] = ptexts.split('代行手数料').map(text => text.match(/([0-9])+円/g).map(price => price.replace('円', '')));
     const { shop, ...dates } = Object.entries(FANSIGN_INFOS).reduce((texts, [info, infoText]) => {
       const infoIndex = splitedPs.findIndex(innerText => innerText.includes(infoText)) + 1;
