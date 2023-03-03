@@ -7,6 +7,14 @@ const fansignTypes = {
   SHOWCASE: 'showcase',
 };
 
+const FAN_MEETING = 'FAN MEETING';
+const constantsEventTypes = {
+  ...fansignTypes,
+  [FAN_MEETING]: 'fanMeeting',
+};
+
+const constantsEventTypeKeys = Object.keys(constantsEventTypes);
+
 const fansignTypeKeys = Object.keys(fansignTypes);
 const normalTypes = Object.entries(fansignTypes)
   .reduce((acc, curr) => [...acc, ...curr], ['CALL'])
@@ -15,6 +23,12 @@ const normalTypes = Object.entries(fansignTypes)
 const ONE_ON_ONE = 'oneOnOne';
 const UNIT = 'unit';
 const ALL = 'all';
+const attendTypes = {
+  '1:1': ONE_ON_ONE,
+  ユニット: UNIT,
+  団体: ALL,
+};
+const attendTypeKeys = Object.keys(attendTypes);
 
 const fansignConfigs = {
   [ONE_ON_ONE]: ['1:1', '個人', '個別'],
@@ -22,7 +36,7 @@ const fansignConfigs = {
   [ALL]: ['団体'],
 };
 
-const FANSIGN_TYPE_DETAIL_MARK = '⭐';
+const SPLIT_MARK = '⭐';
 const SHOP = '販売店';
 const EVENT_DATE = 'イベント日時';
 const EVENT_DEADLINE = 'イベント応募期限';
@@ -38,8 +52,8 @@ const FANSIGN_INFOS = {
 };
 
 const versions = {
-  server: '1.2.2',
-  client: '1.3.1',
+  server: '1.2.3',
+  client: '1.3.2',
 };
 
 const fansignInfoRegex = new RegExp(
@@ -58,7 +72,7 @@ module.exports = {
   UNIT,
   ALL,
   EVENT_DATE,
-  FANSIGN_TYPE_DETAIL_MARK,
+  SPLIT_MARK,
   SHOP,
   EVENT_DEADLINE,
   DEPOSIT_DEADLINE,
@@ -66,4 +80,8 @@ module.exports = {
   FANSIGN_INFOS,
   versions,
   normalTypes,
+  constantsEventTypes,
+  constantsEventTypeKeys,
+  attendTypes,
+  attendTypeKeys,
 };
