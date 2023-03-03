@@ -91,8 +91,8 @@ const oldAnalyze = async ({ title, ptexts }) => {
     fansignType,
     fansignConfig:
       fansignTypeText === 'ビデオ' || fansignTypeText === '対面' || fansignTypeText === 'ヨントン'
-        ? Object.entries(fansignConfigs).filter(([, words]) => words.some(word => title.includes(word)))[0]?.[0] || ''
-        : '',
+        ? Object.entries(fansignConfigs).filter(([, words]) => words.some(word => title.includes(word)))[0]?.[0] || 'none'
+        : 'none',
   };
 };
 
@@ -109,7 +109,7 @@ const analyze = async ({ title, ptexts }) => {
     eventDateOfTitle,
     group,
     fansignType,
-    fansignConfig: attendTypes[attendTypeKeys.find(type => ptexts.includes(type))] || '',
+    fansignConfig: attendTypes[attendTypeKeys.find(type => ptexts.includes(type))] || 'none',
 
     isConstantsType,
     isSpecialEvent,
