@@ -165,8 +165,7 @@ const crawlFansignInfo = async url => {
 
 const imitateHTML = async url => {
   const browser = await puppeteer.launch({
-    headless: false,
-    args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-gpu'],
+    args: ['--no-sandbox', '--disable-setuid-sandbox', '--headless', '--disable-gpu'],
   });
 
   try {
@@ -174,11 +173,13 @@ const imitateHTML = async url => {
     // await load.setCacheEnabled(false);
     // await load.goto(url, { waitUntil: 'load' });
     // const HTML = await load.content();
+    // console.log('load');
 
     // const domcontentloaded = await browser.newPage();
     // await domcontentloaded.setCacheEnabled(false);
     // await domcontentloaded.goto(url, { waitUntil: 'domcontentloaded' });
     // const HTML = await domcontentloaded.content();
+    // console.log('domcontentloaded');
 
     const networkidle0 = await browser.newPage();
     await networkidle0.setCacheEnabled(false);
@@ -189,10 +190,13 @@ const imitateHTML = async url => {
     // await networkidle2.setCacheEnabled(false);
     // await networkidle2.goto(url, { waitUntil: 'networkidle2' });
     // const HTML = await networkidle2.content();
+    // console.log('networkidle2');
 
     return HTML;
   } catch (err) {
     throw Error(err);
+  } finally {
+    await browser.close();
   }
 };
 

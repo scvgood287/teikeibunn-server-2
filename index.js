@@ -33,12 +33,16 @@ app.get('/api/fansign/info', async (req, res, next) => {
   }
 });
 
-app.get('/api/test', async (req, res, next) => {
-  const { url } = req.query;
+app.get('/api/imitateHTML', async (req, res, next) => {
+  try {
+    const { url } = req.query;
 
-  const HTML = await imitateHTML(url);
+    const HTML = await imitateHTML(url);
 
-  res.send(HTML);
+    res.send(HTML);
+  } catch (err) {
+    console.log(err);
+  }
 });
 
 app.listen(port, () => console.log('server listening on port ' + port));
