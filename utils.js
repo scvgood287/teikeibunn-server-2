@@ -31,7 +31,7 @@ const trimAllForObject = obj =>
 
 const checkNewTitle = title =>
   title.includes('イベント') &&
-  (title.includes('対面') || title.includes('ヨントン') || title.includes('特典') || title.includes('ラキドロ') || title.includes('SHOWCASE'));
+  (title.includes('対面') || title.includes('ヨントン') || title.includes('特典') || title.includes('ラキドロ') || title.toUpperCase().includes('SHOWCASE'));
 
 const fullNumberToHalfNumber = fullNumber => fullNumber.replace(/[０-９]/g, s => String.fromCharCode(s.charCodeAt(0) - 0xfee0));
 
@@ -70,7 +70,7 @@ const oldAnalyze = async ({ title, ptexts }) => {
   const group = splitedTitle.slice(0, fansignTypeIndex).join(' ');
   const fansignTypeText = fansignTypeKeys.reduce((acc, curr) => (splitedTitle[fansignTypeIndex].includes(curr) ? curr : acc), 'ヨントン');
 
-  const isSeasonsGreetings = title.includes('シーズン') || title.includes('SEASON');
+  const isSeasonsGreetings = title.includes('シーズン') || title.toUpperCase().includes('SEASON');
   const eventDateOfTitle =
     splitedTitle.slice(fansignTypeIndex + 1).filter(word => word.includes('/') && word.split('/').every(letter => !isNaN(Number(letter))))[0] || '';
 
@@ -99,17 +99,18 @@ const oldAnalyze = async ({ title, ptexts }) => {
 const analyze = async ({ title, ptexts }) => {
   const [group, eventDescription] = fullNumberToHalfNumber(title).split(SPLIT_MARK).filter(Boolean);
   const eventDateOfTitle = eventDescription.split(/\s|!|！/g).find(word => word.includes('/') && word.split('/').every(letter => !isNaN(Number(letter)))) || '';
-  const isSpecialEvent = eventDescription.includes('SP');
+  const subTitle = ptexts.slice(ptexts.indexOf(SPLIT_MARK), ptexts.indexOf(eventDescription) + eventDescription.length);
+  const isSpecialEvent = eventDescription.toUpperCase().includes('SP');
   const eventText = eventDescription.replace(new RegExp(`!|！${!!eventDateOfTitle ? `|(${eventDateOfTitle})` : ''}${isSpecialEvent ? '|(SP)' : ''}`, 'g'), '');
   const isConstantsType = eventText.includes('イベント');
   const fansignType = isConstantsType ? constantsEventTypes[constantsEventTypeKeys.find(key => eventText.includes(key))] : eventText;
 
   return {
-    isSeasonsGreetings: ptexts.includes("SEASON'S GREETINGS"),
+    isSeasonsGreetings: subTitle.toUpperCase().includes("SEASON'S GREETINGS"),
     eventDateOfTitle,
     group,
     fansignType,
-    fansignConfig: attendTypes[attendTypeKeys.find(type => ptexts.includes(type))] || 'none',
+    fansignConfig: attendTypes[attendTypeKeys.find(type => subTitle.includes(type))] || 'none',
 
     isConstantsType,
     isSpecialEvent,
@@ -126,7 +127,7 @@ const crawlFansignInfo = async url => {
     await page.goto(url, { waitUntil: 'domcontentloaded' });
 
     const { title, ps } = await page.evaluate(() => ({
-      title: document.getElementsByClassName('skinArticleTitle')[0].innerText.toUpperCase(),
+      title: document.getElementsByClassName('skinArticleTitle')[0].innerText,
       ps: [...document.getElementsByTagName('p')].map(p => p.innerText),
     }));
     const isNewTitle = title.includes(SPLIT_MARK);
