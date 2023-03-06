@@ -134,7 +134,7 @@ const crawlFansignInfo = async url => {
     const ptexts = fullNumberToHalfNumber(ps.join(''));
     const splitedPs = ptexts.split(fansignInfoRegex).filter(Boolean);
 
-    const [prices, agencyFees] = ptexts.split('代行手数料').map(text => text.match(/([0-9])+円/g).map(price => price.replace('円', '')));
+    const [prices, agencyFees] = ptexts.split('代行手数料').map(text => text.match(/([0-9]|\s)+円/g).map(price => price.replace(/円|\s/g, '')));
     const { shop, ...dates } = Object.entries(FANSIGN_INFOS).reduce((texts, [info, infoText]) => {
       const infoIndex = splitedPs.findIndex(innerText => innerText.includes(infoText)) + 1;
       texts[info] = !!infoIndex ? splitedPs[infoIndex].trim().split(/◆|場所/g).filter(Boolean)[0].split('👉').filter(Boolean)[0].replace(/:|：/g, '') : '';
@@ -163,4 +163,43 @@ const crawlFansignInfo = async url => {
   }
 };
 
-module.exports = { crawlFansignInfo, isPrimitive, trimAll, trimAllForObject };
+const imitateHTML = async url => {
+  const browser = await puppeteer.launch({
+    headless: false,
+    args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-gpu'],
+  });
+
+  try {
+    // const load = await browser.newPage();
+    // await load.setCacheEnabled(false);
+    // await load.goto(url, { waitUntil: 'load' });
+    // const HTML = await load.content();
+
+    // const domcontentloaded = await browser.newPage();
+    // await domcontentloaded.setCacheEnabled(false);
+    // await domcontentloaded.goto(url, { waitUntil: 'domcontentloaded' });
+    // const HTML = await domcontentloaded.content();
+
+    const networkidle0 = await browser.newPage();
+    await networkidle0.setCacheEnabled(false);
+    await networkidle0.goto(url, { waitUntil: 'networkidle0' });
+    const HTML = await networkidle0.content();
+
+    // const networkidle2 = await browser.newPage();
+    // await networkidle2.setCacheEnabled(false);
+    // await networkidle2.goto(url, { waitUntil: 'networkidle2' });
+    // const HTML = await networkidle2.content();
+
+    return HTML;
+  } catch (err) {
+    throw Error(err);
+  }
+};
+
+module.exports = { crawlFansignInfo, imitateHTML, isPrimitive, trimAll, trimAllForObject };
+
+// `waitUntil`:When to consider navigation succeeded, defaults to `load`. Given an array of event strings, navigation is considered to be successful after all events have been fired. Events can be either:<br/>
+// `load` : consider navigation to be finished when the load event is fired.<br/>
+// `domcontentloaded` : consider navigation to be finished when the DOMContentLoaded event is fired.<br/>
+// `networkidle0` : consider navigation to be finished when there are no more than 0 network connections for at least `500` ms.<br/>
+// `networkidle2` : consider navigation to be finished when there are no more than 2 network connections for at least `500` ms.

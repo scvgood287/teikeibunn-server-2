@@ -1,6 +1,6 @@
 const express = require('express');
 const cors = require('cors');
-const { crawlFansignInfo } = require('./utils');
+const { crawlFansignInfo, imitateHTML } = require('./utils');
 const { versions } = require('./constants');
 const app = express();
 const port = process.env.PORT || 443;
@@ -31,6 +31,14 @@ app.get('/api/fansign/info', async (req, res, next) => {
     console.log(err);
     res.status(400);
   }
+});
+
+app.get('/api/test', async (req, res, next) => {
+  const { url } = req.query;
+
+  const HTML = await imitateHTML(url);
+
+  res.send(HTML);
 });
 
 app.listen(port, () => console.log('server listening on port ' + port));

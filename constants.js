@@ -52,7 +52,7 @@ const FANSIGN_INFOS = {
 };
 
 const versions = {
-  server: '1.2.5',
+  server: '1.2.6',
   client: '1.3.3',
 };
 
