@@ -135,13 +135,17 @@ const crawlFansignInfo = async url => {
     const splitedPs = ptexts.split(fansignInfoRegex).filter(Boolean);
 
     const [prices, agencyFees] = ptexts.split('代行手数料').map(text => text.match(/([0-9]|\s)+円/g).map(price => price.replace(/円|\s/g, '')));
-    const { shop, ...dates } = Object.entries(FANSIGN_INFOS).reduce((texts, [info, infoText]) => {
+    const { shop, eventEntryPeriod, ...dates } = Object.entries(FANSIGN_INFOS).reduce((texts, [info, infoText]) => {
       const infoIndex = splitedPs.findIndex(innerText => innerText.includes(infoText)) + 1;
       texts[info] = !!infoIndex ? splitedPs[infoIndex].trim().split(/◆|場所/g).filter(Boolean)[0].split('👉').filter(Boolean)[0].replace(/:|：/g, '') : '';
 
       return texts;
     }, {});
-    dates.eventDeadline = dates.eventDeadline.split(/~|〜/g)[1];
+
+    const [eventEntryStartDate, eventDeadline] = eventEntryPeriod.split(/~|〜/g);
+
+    dates.eventEntryStartDate = eventEntryStartDate;
+    dates.eventDeadline = eventDeadline;
 
     return trimAllForObject({
       serverSideVersions: versions,

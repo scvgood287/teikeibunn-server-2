@@ -39,21 +39,21 @@ const fansignConfigs = {
 const SPLIT_MARK = '⭐';
 const SHOP = '販売店';
 const EVENT_DATE = 'イベント日時';
-const EVENT_DEADLINE = 'イベント応募期限';
+const EVENT_ENTRY_PERIOD = 'イベント応募期限';
 const DEPOSIT_DEADLINE = '最終入金締切';
 const WINNER_ANNOUNCEMENT = '当選発表';
 
 const FANSIGN_INFOS = {
   shop: SHOP,
   eventDate: EVENT_DATE,
-  eventDeadline: EVENT_DEADLINE,
+  eventEntryPeriod: EVENT_ENTRY_PERIOD,
   depositDeadline: DEPOSIT_DEADLINE,
   winnerAnnouncement: WINNER_ANNOUNCEMENT,
 };
 
 const versions = {
-  server: '1.2.6',
-  client: '1.3.3',
+  server: '1.2.7',
+  client: '1.3.4',
 };
 
 const fansignInfoRegex = new RegExp(
@@ -74,7 +74,7 @@ module.exports = {
   EVENT_DATE,
   SPLIT_MARK,
   SHOP,
-  EVENT_DEADLINE,
+  EVENT_ENTRY_PERIOD,
   DEPOSIT_DEADLINE,
   WINNER_ANNOUNCEMENT,
   FANSIGN_INFOS,
