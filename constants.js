@@ -53,7 +53,7 @@ const FANSIGN_INFOS = {
 
 const versions = {
   server: '1.2.7',
-  client: '1.3.6',
+  client: '1.3.7',
 };
 
 const fansignInfoRegex = new RegExp(
