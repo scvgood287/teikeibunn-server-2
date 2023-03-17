@@ -9,7 +9,12 @@ const redis = require('redis');
 const app = express();
 const port = process.env.PORT || 443;
 
-const redisClient = redis.createClient({ url: process.env.REDIS_TLS_URL || process.env.REDIS_URL, socket: { tls: true } });
+const redisClient = redis.createClient({
+  url: process.env.REDIS_TLS_URL || process.env.REDIS_URL,
+  tls: {
+    rejectUnauthorized: false,
+  },
+});
 
 let redisIsReady = false;
 
