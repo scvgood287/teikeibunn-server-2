@@ -8,8 +8,8 @@ const redis = require('redis');
 
 const app = express();
 const port = process.env.PORT || 443;
-const redisClient = redis.createClient(process.env.REDIS_TEST_URL);
-// const redisClient = redis.createClient(process.env.REDIS_URI);
+// const redisClient = redis.createClient(process.env.REDIS_TEST_URL);
+const redisClient = redis.createClient(process.env.REDIS_URI);
 
 let redisIsReady = false;
 
