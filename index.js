@@ -8,18 +8,18 @@ const redis = require('redis');
 
 const app = express();
 const port = process.env.PORT || 443;
-// const redisClient = redis.createClient(process.env.REDIS_TEST_URL);
-const redisClient = redis.createClient(process.env.REDIS_TLS_URL || process.env.REDIS_URL);
+
+const redisClient = redis.createClient({ url: process.env.REDIS_TLS_URL || process.env.REDIS_URL });
 
 let redisIsReady = false;
 
-redisClient.on('connect', () => {
-  redisIsReady = true;
-  console.info('Redis connected!');
-});
 redisClient.on('ready', () => {
   redisIsReady = true;
   console.log('redis is running');
+});
+redisClient.on('connect', () => {
+  redisIsReady = true;
+  console.info('Redis connected!');
 });
 redisClient.on('error', err => {
   redisIsReady = false;
