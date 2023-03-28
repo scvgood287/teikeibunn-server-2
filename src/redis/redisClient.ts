@@ -5,10 +5,14 @@ dotenv.config();
 
 const redisClient = redis.createClient({
   url: process.env.REDIS_URL,
-  socket: {
-    tls: true,
+  // @ts-ignore
+  tls: {
     rejectUnauthorized: false,
   },
+  // socket: {
+  //   tls: true,
+  //   rejectUnauthorized: false,
+  // },
 });
 
 global.isRedisReady = false;
