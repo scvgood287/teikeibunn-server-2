@@ -1,130 +1,161 @@
 import { launch, PuppeteerLaunchOptions, Browser, Page } from 'puppeteer';
-import { trimAllForObject, fullNumberToHalfNumber, dateStringToDate, analyze, oldAnalyze } from './calculators';
-import { fansignInfoRegex, FANSIGN_INFOS, SPLIT_MARK, versions } from '../constants';
-import { BrowserFunction } from '../types';
-import dotenv from 'dotenv';
-
-dotenv.config();
-
-// export const browsers: Array<BrowserInstance> = [];
-
-// export const getBrowserInstance = async (puppeteerLaunchOptions: PuppeteerLaunchOptions = defaultOptions): Promise<BrowserInstance> => {
-//   let useableBrowserInstance = browsers.find(({ states: { inUse } }) => !inUse);
-
-//   if (!useableBrowserInstance) {
-//     useableBrowserInstance = {
-//       id: browsers.length,
-//       states: {
-//         inUse: false,
-//       },
-//       browser: await launch(process.env.NODE_ENV !== 'production' ? { headless: false } : puppeteerLaunchOptions),
-//     };
-
-//     browsers.push(useableBrowserInstance);
-//   }
-
-//   return useableBrowserInstance;
-// };
+import { trimAllForObject, fullNumberToHalfNumber, dateStringToDate, analyze } from './calculators';
+import { eventInfoRegex, EVENT_INFOS, isProduction, crawlEventInfoResultDefault } from '../constants';
+import { BrowserInstance, BrowserFunction, CrawlEventInfoResult, BaseCrawlEventInfoResult, DateInfo, EventDateInfos } from '../types';
 
 export const defaultOptions: PuppeteerLaunchOptions = {
-  // headless: false,
   args: ['--no-sandbox', '--disable-setuid-sandbox', '--headless', '--disable-gpu'],
 };
+// isProduction
+//   ? {
+//       args: ['--no-sandbox', '--disable-setuid-sandbox', '--headless', '--disable-gpu'],
+//     }
+//   : { headless: false };
 
-export class BrowserInstance {
-  static #instance: Browser;
+export class BrowserInstances {
+  static #browser: Browser;
 
   static async getInstance(puppeteerLaunchOptions: PuppeteerLaunchOptions = defaultOptions) {
-    if (!BrowserInstance.#instance) {
-      BrowserInstance.#instance = await launch(puppeteerLaunchOptions);
+    if (!BrowserInstances.#browser) {
+      BrowserInstances.#browser = await launch(puppeteerLaunchOptions);
     }
 
-    return BrowserInstance.#instance;
+    return BrowserInstances.#browser;
   }
+
+  // static #browsers: BrowserInstance[];
+
+  // static async getInstance(puppeteerLaunchOptions: PuppeteerLaunchOptions = defaultOptions) {
+  //   let browserInstance = BrowserInstances.#browsers.find(({ states: { inUse } }) => !inUse);
+
+  //   if (!browserInstance) {
+  //     browserInstance = {
+  //       id: BrowserInstances.#browsers.length,
+  //       states: {
+  //         inUse: false,
+  //       },
+  //       browser: await launch(puppeteerLaunchOptions),
+  //     };
+
+  //     BrowserInstances.#browsers.push(browserInstance);
+  //   }
+
+  //   return browserInstance;
+  // }
+
+  // static setInUse(id: number) {
+  //   BrowserInstances.#browsers[id].states.inUse = true;
+  // }
+
+  // static setInUnuse(id: number) {
+  //   BrowserInstances.#browsers[id].states.inUse = false;
+  // }
 }
 
 export const useBrowserTransaction = <A, R>(transaction: BrowserFunction<A, R>, puppeteerLaunchOptions: PuppeteerLaunchOptions = defaultOptions) => {
   const browserTransaction = async (args: A) => {
-    const browser = await BrowserInstance.getInstance(puppeteerLaunchOptions);
+    const browser = await BrowserInstances.getInstance(puppeteerLaunchOptions);
+
+    // const { id, browser } = await BrowserInstances.getInstance(puppeteerLaunchOptions);
+    // BrowserInstances.setInUse(id);
+
     let usedPages: Page[] = [];
 
     try {
-      const { pages, result } = await transaction(browser, args);
+      const { pages, ...result } = await transaction(browser, args);
 
       usedPages = pages;
+
       return result;
-    } catch (error) {
-      throw Error(String(error));
     } finally {
       await Promise.all(usedPages.map(async page => await page.close()));
+
+      // BrowserInstances.setInUnuse(id);
     }
-
-    //   const { id, browser } = await getBrowserInstance(puppeteerLaunchOptions);
-    //   browsers[id].states.inUse = true;
-
-    //   try {
-    //     return await transaction(browser, args);
-    //   } catch (error) {
-    //     throw Error(String(error));
-    //   } finally {
-    //     await Promise.all((await browser.pages()).map(async page => await page.close()));
-    //     browsers[id].states.inUse = false;
-    //   }
-    // };
   };
 
   return browserTransaction;
 };
 
-export const crawlFansignInfo: BrowserFunction<string, Object> = async (browser: Browser, url: string) => {
-  const page = await browser.newPage();
-  await page.goto(url, { waitUntil: 'domcontentloaded' });
+export const crawlEventInfo = async (browser: Browser, url: string) => {
+  const pages: Page[] = [];
+  let baseResults: CrawlEventInfoResult = crawlEventInfoResultDefault;
+  let title: string;
+  let ps: string[];
 
-  const { title, ps }: { title: string; ps: string[] } = await page.evaluate(() => ({
-    title: ([...document.getElementsByClassName('skinArticleTitle')][0] as HTMLElement).innerText,
-    ps: [...document.getElementsByTagName('p')].map(p => p.innerText),
-  }));
-  const isNewTitle = title.includes(SPLIT_MARK);
-  const ptexts = fullNumberToHalfNumber(ps.join(''));
-  const splitedPs = ptexts.split(fansignInfoRegex).filter(Boolean);
+  try {
+    const page = await browser.newPage();
+    pages.push(page);
+    await page.goto(url, { waitUntil: 'domcontentloaded' });
 
-  const [prices, agencyFees] = ptexts.split('代行手数料').map(text => text.match(/([0-9]|\s)+円/g)?.map(price => price.replace(/円|\s/g, '')) || [0, 0]);
-  const { shop, eventEntryPeriod, ...dates } = Object.entries(FANSIGN_INFOS).reduce<any>((texts, [info, infoText]) => {
-    const infoIndex = splitedPs.findIndex(innerText => innerText.includes(infoText)) + 1;
-    texts[info] = !!infoIndex
-      ? splitedPs[infoIndex]
-          .trim()
-          .split(/◆|場所/g)
-          .filter(Boolean)[0]
-          .split('👉')
-          .filter(Boolean)[0]
-          .replace(/:|：/g, '')
-      : '';
+    [title, ps] = (await page.evaluate(() => [
+      ([...document.getElementsByClassName('skinArticleTitle')][0] as HTMLElement).innerText,
+      [...document.getElementsByTagName('p')].map(p => p.innerText),
+    ])) as [string, string[]];
+  } catch (error) {
+    return { pages, errorMessage: String(error) };
+  }
 
-    return texts;
-  }, {});
+  try {
+    const ptexts = fullNumberToHalfNumber(ps.join(''));
+    const splitedPs = ptexts.split(eventInfoRegex).filter(Boolean);
 
-  const [eventEntryStartDate, eventDeadline] = eventEntryPeriod.split(/~|〜/g);
+    baseResults = {
+      ...baseResults,
+      ...analyze({ title, ptexts }),
+    };
 
-  dates.eventEntryStartDate = eventEntryStartDate;
-  dates.eventDeadline = eventDeadline;
+    const { shop, eventEntryPeriod, ...dates } = Object.entries(EVENT_INFOS).reduce<{ [key: string]: string }>((texts, [info, infoText]) => {
+      const infoIndex = splitedPs.findIndex(innerText => innerText.includes(infoText)) + 1;
+      texts[info] = !!infoIndex
+        ? splitedPs[infoIndex]
+            .trim()
+            .split(/◆|場所/g)
+            .filter(Boolean)[0]
+            .split('👉')
+            .filter(Boolean)[0]
+            .replace(/:|：/g, '')
+        : '';
 
-  return {
-    pages: [page],
-    result: trimAllForObject({
-      serverSideVersions: versions,
-      isNewTitle,
-      prices,
-      agencyFees,
+      return texts;
+    }, {});
+
+    baseResults = {
+      ...baseResults,
       shop,
-      ...Object.entries(dates).reduce<any>((details, [info, dateString]) => {
+    };
+
+    const [eventEntryStartDate, eventDeadline] = eventEntryPeriod.split(/~|〜/g);
+
+    dates.eventEntryStartDate = eventEntryStartDate;
+    dates.eventDeadline = eventDeadline;
+
+    baseResults = {
+      ...baseResults,
+      ...(Object.entries(dates).reduce<{ [key: string]: DateInfo }>((details, [info, dateString]) => {
         details[info] = dateStringToDate(dateString as string);
 
         return details;
-      }, {}),
-      ...(await (isNewTitle ? analyze : oldAnalyze)({ title, ptexts })),
-    }),
-  };
+      }, {}) as { [key in keyof (EventDateInfos & { eventEntryStartDate: DateInfo; eventDeadline: DateInfo })]: DateInfo }),
+    };
+
+    const [prices, agencyFees] = ptexts
+      .split('代行手数料')
+      .map(text => text.match(/([0-9]|\s)+円/g)?.map(price => Number(price.replace(/円|\s/g, ''))) || [0, 0]);
+
+    baseResults = {
+      ...baseResults,
+      prices,
+      agencyFees,
+    };
+
+    return {
+      pages,
+      result: trimAllForObject<CrawlEventInfoResult>(baseResults),
+    };
+  } catch (error) {
+    return { pages, result: trimAllForObject<Partial<CrawlEventInfoResult>>(baseResults), errorMessage: String(error) };
+  }
 };
 
-export const useCrawlFansignInfo = useBrowserTransaction(crawlFansignInfo);
+export const useCrawlEventInfo = useBrowserTransaction(crawlEventInfo);

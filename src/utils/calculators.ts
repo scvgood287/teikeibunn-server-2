@@ -1,18 +1,21 @@
-import {
-  fansignTypes,
-  fansignConfigs,
-  fansignTypeKeys,
-  SPLIT_MARK,
-  normalTypes,
-  constantsEventTypes,
-  constantsEventTypeKeys,
-  attendTypes,
-  attendTypeKeys,
-} from '../constants';
+import { AnalyzeFunction, AttendTypes, EventTypes } from '../types';
+import { SPLIT_MARK, eventTypes, eventTypeKeys, attendTypes, attendTypeKeys, NONE, PRE_URL_ID, POST_URL_ID, dateInfoDefault } from '../constants';
+
+const calculateByUnit = {
+  day: (milliseconds: number) => milliseconds / (1000 * 60 * 60 * 24),
+  hours: (milliseconds: number) => milliseconds / (1000 * 60 * 60),
+  minutes: (milliseconds: number) => milliseconds / (1000 * 60),
+  seconds: (milliseconds: number) => milliseconds / 1000,
+};
+
+export const calculateDateDiff = (start: Date, end: Date, unit: 'day' | 'hours' | 'minutes' | 'seconds' = 'seconds') =>
+  calculateByUnit[unit](end.getTime() - start.getTime());
+
+export const amebloUrlIdToUrl = (urlId: string) => `${PRE_URL_ID}${urlId}${POST_URL_ID}`;
 
 export const isPrimitive = (value: any) => value === null || !(typeof value == 'object' || typeof value == 'function');
 
-export const trimAllForObject = (obj: any): Object =>
+export const trimAllForObject = <T>(obj: any): T =>
   isPrimitive(obj)
     ? typeof obj === 'string'
       ? obj.trim()
@@ -41,76 +44,30 @@ export const dateStringToDate = (dateString: string): { year: number; month: num
     const minutes = hourIndex && minutesIndex ? Number(time.slice(hourIndex + 1, minutesIndex)) : 0;
 
     return {
-      year,
-      month,
-      day,
+      year: year || 0,
+      month: month || 0,
+      day: day || 0,
       hour,
       minutes,
     };
   }
 
-  return {
-    year: 0,
-    month: 0,
-    day: 0,
-    hour: 0,
-    minutes: 0,
-  };
+  return dateInfoDefault;
 };
 
-export const analyze = async ({ title, ptexts }: { title: string; ptexts: string }) => {
+export const analyze: AnalyzeFunction = ({ title, ptexts }) => {
   const [group, eventDescription] = fullNumberToHalfNumber(title).split(SPLIT_MARK).filter(Boolean);
   const eventDateOfTitle = eventDescription.split(/\s|!|！/g).find(word => word.includes('/') && word.split('/').every(letter => !isNaN(Number(letter)))) || '';
   const subTitle = ptexts.slice(ptexts.indexOf(SPLIT_MARK), ptexts.indexOf(eventDescription) + eventDescription.length);
   const isSpecialEvent = eventDescription.toUpperCase().includes('SP');
   const eventText = eventDescription.replace(new RegExp(`!|！${!!eventDateOfTitle ? `|(${eventDateOfTitle})` : ''}${isSpecialEvent ? '|(SP)' : ''}`, 'g'), '');
-  const isConstantsType = eventText.includes('イベント');
-  const fansignType = isConstantsType
-    ? constantsEventTypes[constantsEventTypeKeys.find(key => eventText.includes(key)) as keyof { [key: string]: string }]
-    : eventText;
 
   return {
     isSeasonsGreetings: subTitle.toUpperCase().includes("SEASON'S GREETINGS"),
-    eventDateOfTitle,
-    group,
-    fansignType,
-    fansignConfig: attendTypes[attendTypeKeys.find(type => subTitle.includes(type)) as keyof {}] || 'none',
-
-    isConstantsType,
     isSpecialEvent,
-  };
-};
-
-export const oldAnalyze = async ({ title, ptexts }: { title: string; ptexts: string }) => {
-  const isNewTitle = checkNewTitle(title);
-
-  const splitedTitle = title.split(/\s/g);
-  const fansignTypeIndex = splitedTitle.findIndex(el => (isNewTitle ? checkNewTitle(el) : el.includes('!') || el.includes('！') || el.includes('サイン会')));
-  const group = splitedTitle.slice(0, fansignTypeIndex).join(' ');
-  const fansignTypeText = fansignTypeKeys.reduce((acc, curr) => (splitedTitle[fansignTypeIndex].includes(curr) ? curr : acc), 'ヨントン');
-
-  const isSeasonsGreetings = title.includes('シーズン') || title.toUpperCase().includes('SEASON');
-  const eventDateOfTitle =
-    splitedTitle.slice(fansignTypeIndex + 1).filter(word => word.includes('/') && word.split('/').every(letter => !isNaN(Number(letter))))[0] || '';
-
-  const startOfFansignTypeDetail = ptexts.indexOf(SPLIT_MARK);
-  const fansignTypeDetailText = ptexts.includes(SPLIT_MARK)
-    ? ptexts.slice(startOfFansignTypeDetail + 1, ptexts.indexOf(SPLIT_MARK, startOfFansignTypeDetail + 1))
-    : '';
-  const fansignTypeDetailTextToUpperCase = fansignTypeDetailText.toUpperCase();
-  const fansignType =
-    !fansignTypeDetailTextToUpperCase.includes('SP') && normalTypes.some(type => fansignTypeDetailTextToUpperCase.includes(type))
-      ? fansignTypes[fansignTypeText]
-      : fansignTypeDetailText;
-
-  return {
-    isSeasonsGreetings,
     eventDateOfTitle,
     group,
-    fansignType,
-    fansignConfig:
-      fansignTypeText === 'ビデオ' || fansignTypeText === '対面' || fansignTypeText === 'ヨントン'
-        ? Object.entries(fansignConfigs).filter(([, words]) => words.some(word => title.includes(word)))[0]?.[0] || 'none'
-        : 'none',
+    eventType: eventText.includes('イベント') ? eventTypes[eventTypeKeys.find(key => eventText.includes(key)) as keyof EventTypes] : eventText,
+    eventConfig: attendTypes[attendTypeKeys.find(type => subTitle.includes(type)) as keyof AttendTypes] || NONE,
   };
 };

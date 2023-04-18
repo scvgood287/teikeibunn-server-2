@@ -1,1 +1,1 @@
-export { default as checkCache } from './checkCache';
+export { default as validation } from './validation';
