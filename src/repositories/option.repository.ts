@@ -63,8 +63,8 @@ export default postgresqlDataSource.getRepository(Option).extend({
     };
   },
 
-  async updateOption({ product, ...option }: Option) {
-    return await this.manager.transaction(async manager => await manager.update(Option, { id: option.id }, option));
+  async updateOption({ product, id, ...option }: Option) {
+    return await this.manager.transaction(async manager => await manager.update(Option, { id }, option));
   },
 
   async updateOptions(options: Array<Option>) {
