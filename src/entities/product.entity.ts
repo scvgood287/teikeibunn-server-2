@@ -1,4 +1,4 @@
-import { Entity, Column, PrimaryGeneratedColumn, OneToMany } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, OneToMany, Index } from 'typeorm';
 import { Option } from './option.entity';
 
 @Entity()
@@ -12,6 +12,7 @@ export class Product {
   @Column()
   price: number;
 
+  @Index()
   @Column()
   urlId: string;
 

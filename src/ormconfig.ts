@@ -2,13 +2,14 @@ import { DataSourceOptions } from 'typeorm';
 import { isProduction } from './constants';
 import { Option, Product } from './entities';
 
-export const config: DataSourceOptions = isProduction
+export const config: DataSourceOptions = true
   ? {
       type: 'postgres',
       url: process.env.DATABASE_URL,
       ssl: { rejectUnauthorized: false },
       entities: [Product, Option],
       // migrations: ['src/migrations/*.ts'],
+      // dropSchema: true,
       // synchronize: true,
       // cache: {
       //   type: 'redis',
