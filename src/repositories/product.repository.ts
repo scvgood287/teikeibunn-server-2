@@ -4,7 +4,7 @@ import { DeepPartial, UpdateResult } from 'typeorm';
 
 export default postgresqlDataSource.getRepository(Product).extend({
   async getProducts(urlId: string) {
-    return await this.find({ where: { urlId }, relations: { options: true }, order: { price: 'ASC', name: 'ASC', options: { name: 'ASC', price: 'ASC' } } });
+    return await this.find({ where: { urlId }, relations: { options: true }, order: { price: 'ASC', name: 'ASC', options: { price: 'ASC', name: 'ASC' } } });
   },
 
   async getProduct(id: string) {
