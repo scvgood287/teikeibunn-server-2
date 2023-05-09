@@ -1,4 +1,4 @@
-import { AnalyzeFunction, AttendTypes, DATE_PATTERN, DateInfo, EventTypes, ValueOf } from '../types';
+import { AnalyzeFunction, AttendTypes, DateInfo, EventTypes } from '../types';
 import { SPLIT_MARK, eventTypes, eventTypeKeys, attendTypes, attendTypeKeys, NONE, PRE_URL_ID, POST_URL_ID, DATE_PATTERNS } from '../constants';
 
 const calculateByUnit = {
@@ -40,12 +40,9 @@ export const fullNumberToHalfNumber = (fullNumber: string) => fullNumber.replace
 
 export const trimAll = (value: string) => value.replace(/(\s*)/g, '');
 
-export const getDateValueFromDateString = (date: string, pattern: DATE_PATTERN) =>
-  toRightNumber(date.match(new RegExp(`-?\\d+${pattern}`))?.[0].match(/-?\d+/));
-
 export const dateStringToDateInfo = (dateString: string): DateInfo =>
   DATE_PATTERNS.reduce<DateInfo>(
-    (acc, [prop, pattern]) => ({ ...acc, [prop]: toRightNumber(dateString.match(new RegExp(`-?\\d+${pattern}`))?.[0].match(/-?\d+/)) }),
+    (acc, [prop, pattern]) => ({ ...acc, [prop]: toRightNumber(dateString.match(new RegExp(`-?\\d+${pattern}`))?.[0].match(/-?\d+/)?.[0]) }),
     {
       year: 0,
       month: 0,
