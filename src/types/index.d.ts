@@ -16,6 +16,7 @@ import {
   DEPOSIT_DEADLINE,
   WINNER_ANNOUNCEMENT,
   SHOP,
+  WINNERS_NUMBER,
   EVENT_ENTRY_PERIOD,
   NONE,
   NAME,
@@ -154,6 +155,7 @@ export type EventDateInfos = {
 
 export interface EventInfos extends EventDateInfos {
   shop: typeof SHOP;
+  winnersNumber: typeof WINNERS_NUMBER;
   eventEntryPeriod: typeof EVENT_ENTRY_PERIOD;
 }
 
@@ -176,6 +178,7 @@ export type AnalyzeFunction = ({ title, ptexts }: { title: string; ptexts: strin
 
 export interface CrawlEventInfoResult extends AnalyzeResult {
   shop: string;
+  winnersNumber: string;
   eventEntryStartDate: DateInfo;
   eventDeadline: DateInfo;
 

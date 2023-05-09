@@ -13,6 +13,7 @@ export const ALL = 'all';
 
 export const SPLIT_MARK = '⭐';
 export const SHOP = '販売店';
+export const WINNERS_NUMBER = '当選人数';
 export const EVENT_DATE = 'イベント日時';
 export const EVENT_ENTRY_PERIOD = 'イベント応募期限';
 export const DEPOSIT_DEADLINE = '最終入金締切';
@@ -60,6 +61,7 @@ export const EVENT_DATE_INFOS: EventDateInfos = {
 
 export const EVENT_INFOS: EventInfos = {
   shop: SHOP,
+  winnersNumber: WINNERS_NUMBER,
   eventEntryPeriod: EVENT_ENTRY_PERIOD,
   ...EVENT_DATE_INFOS,
 };
@@ -85,6 +87,7 @@ export const attendTypeKeys = Object.keys(attendTypes);
 
 export const crawlEventInfoResultDefault: CrawlEventInfoResult = {
   shop: '',
+  winnersNumber: '',
   eventEntryStartDate: { year: 0, month: 0, day: 0, hour: 0, minutes: 0 },
   eventDeadline: { year: 0, month: 0, day: 0, hour: 0, minutes: 0 },
 

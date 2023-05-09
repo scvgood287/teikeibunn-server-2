@@ -105,7 +105,7 @@ export const crawlEventInfo = async (browser: Browser, url: string) => {
       ...analyze({ title, ptexts }),
     };
 
-    const { shop, eventEntryPeriod, ...dates } = Object.entries(EVENT_INFOS).reduce<{ [key: string]: string }>((texts, [info, infoText]) => {
+    const { shop, winnersNumber, eventEntryPeriod, ...dates } = Object.entries(EVENT_INFOS).reduce<{ [key: string]: string }>((texts, [info, infoText]) => {
       const infoIndex = splitedPs.findIndex(innerText => innerText.includes(infoText)) + 1;
       texts[info] = !!infoIndex
         ? splitedPs[infoIndex]
@@ -115,6 +115,7 @@ export const crawlEventInfo = async (browser: Browser, url: string) => {
             .split('👉')
             .filter(Boolean)[0]
             .replace(/:|：/g, '')
+            .replace(/\n/g, ' ')
         : '';
 
       return texts;
@@ -123,6 +124,7 @@ export const crawlEventInfo = async (browser: Browser, url: string) => {
     baseResults = {
       ...baseResults,
       shop,
+      winnersNumber,
     };
 
     const [eventEntryStartDate, eventDeadline] = eventEntryPeriod.split(/~|〜/g);
