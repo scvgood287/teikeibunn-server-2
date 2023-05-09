@@ -1,5 +1,5 @@
 import { launch, PuppeteerLaunchOptions, Browser, Page } from 'puppeteer';
-import { trimAllForObject, fullNumberToHalfNumber, dateStringToDate, analyze } from './calculators';
+import { trimAllForObject, fullNumberToHalfNumber, dateStringToDateInfo, analyze } from './calculators';
 import { eventInfoRegex, EVENT_INFOS, isProduction, crawlEventInfoResultDefault } from '../constants';
 import { BrowserInstance, BrowserFunction, CrawlEventInfoResult, BaseCrawlEventInfoResult, DateInfo, EventDateInfos } from '../types';
 
@@ -107,16 +107,18 @@ export const crawlEventInfo = async (browser: Browser, url: string) => {
 
     const { shop, winnersNumber, eventEntryPeriod, ...dates } = Object.entries(EVENT_INFOS).reduce<{ [key: string]: string }>((texts, [info, infoText]) => {
       const infoIndex = splitedPs.findIndex(innerText => innerText.includes(infoText)) + 1;
-      texts[info] = !!infoIndex
-        ? splitedPs[infoIndex]
-            .trim()
-            .split(/◆|場所/g)
-            .filter(Boolean)[0]
-            .split('👉')
-            .filter(Boolean)[0]
-            .replace(/:|：/g, '')
-            .replace(/\n/g, ' ')
-        : '';
+
+      texts[info] =
+        infoIndex > 0
+          ? splitedPs[infoIndex]
+              .trim()
+              .split(/◆|場所/g)
+              .filter(Boolean)[0]
+              ?.split('👉')
+              .filter(Boolean)[0]
+              ?.replace(/:|：/g, '')
+              .replace(/\n/g, ' ') || ''
+          : '';
 
       return texts;
     }, {});
@@ -135,7 +137,12 @@ export const crawlEventInfo = async (browser: Browser, url: string) => {
     baseResults = {
       ...baseResults,
       ...(Object.entries(dates).reduce<{ [key: string]: DateInfo }>((details, [info, dateString]) => {
-        details[info] = dateStringToDate(dateString as string);
+        details[info] = dateStringToDateInfo(
+          dateString
+            .replace(/\s/g, '')
+            .replace(/ー/g, '-')
+            .match(/-?\d.*/)?.[0] || '',
+        );
 
         return details;
       }, {}) as { [key in keyof (EventDateInfos & { eventEntryStartDate: DateInfo; eventDeadline: DateInfo })]: DateInfo }),

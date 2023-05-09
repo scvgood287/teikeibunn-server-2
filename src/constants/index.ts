@@ -1,4 +1,4 @@
-import { AttendTypes, EventTypes, EventInfos, EventDateInfos, CrawlEventInfoResult, DateInfo } from '../types';
+import { AttendTypes, EventTypes, EventInfos, EventDateInfos, CrawlEventInfoResult, DateInfo, DATE_PATTERN } from '../types';
 import dotenv from 'dotenv';
 
 dotenv.config();
@@ -106,6 +106,20 @@ export const crawlEventInfoResultDefault: CrawlEventInfoResult = {
   isSeasonsGreetings: false,
   isSpecialEvent: false,
 };
+
+export const DATE_PATTERN_YEAR = '年' as const;
+export const DATE_PATTERN_MONTH = '月' as const;
+export const DATE_PATTERN_DAY = '日' as const;
+export const DATE_PATTERN_HOUR = '時' as const;
+export const DATE_PATTERN_MINUTES = '分' as const;
+
+export const DATE_PATTERNS = [
+  ['year', DATE_PATTERN_YEAR],
+  ['month', DATE_PATTERN_MONTH],
+  ['day', DATE_PATTERN_DAY],
+  ['hour', DATE_PATTERN_HOUR],
+  ['minutes', DATE_PATTERN_MINUTES],
+] as const;
 
 export const dateInfoDefault: DateInfo = {
   year: 0,

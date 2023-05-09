@@ -22,6 +22,11 @@ import {
   NAME,
   OPTIONS,
   PRICE,
+  DATE_PATTERN_YEAR,
+  DATE_PATTERN_MONTH,
+  DATE_PATTERN_DAY,
+  DATE_PATTERN_HOUR,
+  DATE_PATTERN_MINUTES,
 } from '../constants';
 
 declare global {
@@ -209,3 +214,10 @@ export interface EventInfo<T extends typeof ALBUM | typeof PRODUCT> {
   productType: T;
   eventInfo: Partial<CrawlEventInfoResult>;
 }
+
+export type DATE_PATTERN =
+  | typeof DATE_PATTERN_YEAR
+  | typeof DATE_PATTERN_MONTH
+  | typeof DATE_PATTERN_DAY
+  | typeof DATE_PATTERN_HOUR
+  | typeof DATE_PATTERN_MINUTES;
