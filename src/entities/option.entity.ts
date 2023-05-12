@@ -12,6 +12,9 @@ export class Option {
   @Column()
   price: number;
 
+  @Column()
+  lotteryticket: number;
+
   @ManyToOne(() => Product, product => product.options, { onDelete: 'CASCADE' })
   product: Product;
 }

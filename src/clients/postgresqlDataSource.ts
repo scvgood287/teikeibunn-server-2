@@ -1,11 +1,10 @@
-import { DataSource } from 'typeorm';
 import dotenv from 'dotenv';
-import { config } from '../ormconfig';
+import dataSource from '../ormconfig';
 
 dotenv.config();
 
 global.isDbReady = false;
 
-const postgresqlDataSource = new DataSource(config);
+const postgresqlDataSource = dataSource;
 
 export default postgresqlDataSource;

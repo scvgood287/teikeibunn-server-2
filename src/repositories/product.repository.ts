@@ -11,7 +11,7 @@ export default postgresqlDataSource.getRepository(Product).extend({
     return await this.findOne({ where: { id }, relations: { options: true } });
   },
 
-  createProducts(products: Array<DeepPartial<Product>>) {
+  createProducts(products: Array<Omit<Product, 'id' | 'options'>>) {
     return this.create(products);
   },
 

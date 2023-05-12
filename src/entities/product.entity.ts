@@ -12,6 +12,9 @@ export class Product {
   @Column()
   price: number;
 
+  @Column()
+  lotteryticket: number;
+
   @Index()
   @Column()
   urlId: string;

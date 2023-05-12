@@ -39,11 +39,13 @@ export type ValueOf<T> = T[keyof T];
 export type OptionType = {
   [NAME]: string;
   [PRICE]: number;
+  lotteryticket: number;
 };
 
 export type ProductType = {
   [NAME]: string;
   [PRICE]: number;
+  lotteryticket: number;
   [OPTIONS]: Array<OptionType>;
 };
 

@@ -1,4 +1,4 @@
-import { cacheRepository, optionRepository, productRepository } from '../repositories';
+import { optionRepository, productRepository } from '../repositories';
 import { CacheTypes, ProductType } from '../types';
 import { Product } from '../entities';
 import { PRODUCT } from '../constants';
@@ -11,8 +11,8 @@ const createProducts = async (urlId: string, products: Array<ProductType>) => {
     return {
       createdProducts: await productRepository.saveProducts(
         await Promise.all(
-          products.map(async ({ name, price, options }) => {
-            const product = productRepository.createProducts([{ name, price, urlId }])[0];
+          products.map(async ({ options, ...productType }) => {
+            const product = productRepository.createProducts([{ ...productType, urlId }])[0];
             product.options = await optionRepository.saveOptions(optionRepository.createOptions(options));
 
             return product;
