@@ -34,8 +34,9 @@ const updateEventInfoProductTypeCache = async (urlId: string, cache: CacheTypes,
       const newCache = { ...cache.eventInfo, productType };
       const redisKey = `${EVENT_INFO}/${urlId}`;
 
+      rollbacks.unshift(async () => await cacheRepository.setCache(redisKey, JSON.stringify(cache.eventInfo)));
+
       await cacheRepository.setCache(redisKey, JSON.stringify(newCache));
-      rollbacks.push(async () => await cacheRepository.setCache(redisKey, JSON.stringify(cache.eventInfo)));
 
       success = true;
     }

@@ -53,9 +53,12 @@ export const setEventInfoAndProductsCache = async (
         try {
           const key = `${target}/${urlId}`;
 
-          await cacheRepository.setCache(key, JSON.stringify(results[target].result));
-          rollbacks.push(async () => await cacheRepository.deleteCache(key));
+          rollbacks.unshift(async () => {
+            await cacheRepository.deleteCache(key);
+            results[target].saveCache = false;
+          });
 
+          await cacheRepository.setCache(key, JSON.stringify(results[target].result));
           await cacheRepository.expire(key, maxAge);
 
           results[target].saveCache = true;

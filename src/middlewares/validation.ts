@@ -20,14 +20,14 @@ const validateCache: CacheRequestHandler = async (req, res, next) => {
       if (productsCache) {
         products = JSON.parse(productsCache);
       }
-
-      req.body.cache = {
-        eventInfo,
-        products,
-      };
-
-      next();
     }
+
+    req.body.cache = {
+      eventInfo,
+      products,
+    };
+
+    next();
   } catch (error) {
     console.error(error);
     res.status(400).json(String(error));
