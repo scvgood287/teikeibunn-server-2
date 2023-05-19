@@ -1,5 +1,5 @@
-import { AnalyzeFunction, AttendTypes, DateInfo, EventTypes } from '../types';
-import { SPLIT_MARK, eventTypes, eventTypeKeys, attendTypes, attendTypeKeys, NONE, PRE_URL_ID, POST_URL_ID, DATE_PATTERNS } from '../constants';
+import { AnalyzeFunction, DateInfo } from '../types';
+import { eventTypes, eventTypeKeys, attendTypes, attendTypeKeys, NONE, PRE_URL_ID, POST_URL_ID, DATE_PATTERNS, AMEBLO_JP_TEXT_PATTERNS } from '../constants';
 
 const calculateByUnit = {
   day: (milliseconds: number) => milliseconds / (1000 * 60 * 60 * 24),
@@ -42,7 +42,15 @@ export const trimAll = (value: string) => value.replace(/(\s*)/g, '');
 
 export const dateStringToDateInfo = (dateString: string): DateInfo =>
   DATE_PATTERNS.reduce<DateInfo>(
-    (acc, [prop, pattern]) => ({ ...acc, [prop]: toRightNumber(dateString.match(new RegExp(`-?\\d+${pattern}`))?.[0].match(/-?\d+/)?.[0]) }),
+    (acc, [prop, pattern]) => ({
+      ...acc,
+      [prop]: toRightNumber(
+        dateString
+          .match(new RegExp(`-?\\d+${pattern}`))?.[0]
+          .match(/-?\d+/)?.[0]
+          .replace(/\-/g, ''),
+      ),
+    }),
     {
       year: 0,
       month: 0,
@@ -52,21 +60,31 @@ export const dateStringToDateInfo = (dateString: string): DateInfo =>
     },
   );
 
-export const analyze: AnalyzeFunction = ({ title, ptexts }) => {
-  const [group, eventDescriptionText] = fullNumberToHalfNumber(title).split(SPLIT_MARK).filter(Boolean);
-  const eventDescription = eventDescriptionText || '';
-  const eventDateOfTitle = eventDescription.split(/\s|!|！/g).find(word => word.includes('/') && word.split('/').every(letter => !isNaN(Number(letter)))) || '';
-  const subTitle = ptexts.slice(ptexts.indexOf(SPLIT_MARK), ptexts.indexOf(eventDescription) + eventDescription.length);
-  const isSpecialEvent = eventDescription.toUpperCase().includes('SP');
-  const eventText = eventDescription.replace(new RegExp(`!|！${!!eventDateOfTitle ? `|(${eventDateOfTitle})` : ''}${isSpecialEvent ? '|(SP)' : ''}`, 'g'), '');
+export const initializeAmebloText = (text: string): string =>
+  fullNumberToHalfNumber(
+    AMEBLO_JP_TEXT_PATTERNS.reduce<string>((text, [froms, to]) => text.replace(new RegExp(froms.map(from => '\\' + from).join('|'), 'g'), to), text),
+  );
+
+export const analyze: AnalyzeFunction = subTitle => {
+  const eventDescriptionsText = subTitle.trim();
+  const isSeasonsGreetings = eventDescriptionsText.toUpperCase().includes("SEASON'S GREETINGS");
+  const eventConfigText = attendTypeKeys.find(type => eventDescriptionsText.includes(type));
+
+  const eventDescriptions = eventDescriptionsText
+    .replace(new RegExp(`!|(SEASON'S GREETINGS)${eventConfigText ? `|${eventConfigText}` : ''}`, 'g'), '')
+    .trim()
+    .split(/\s+/)
+    .filter(text => Boolean(text) && !/^\d{1,2}\/\d{1,2}$/.test(text) && text !== '◆');
+
+  const isSpecialEvent = eventDescriptions[0].toUpperCase() === 'SP';
+  const eventText = eventDescriptions.slice(isSpecialEvent ? 1 : 0).join(' ');
+  const eventTypeText = eventTypeKeys.find(key => eventText.includes(key));
 
   return {
-    isSeasonsGreetings: subTitle.toUpperCase().includes("SEASON'S GREETINGS"),
+    isSeasonsGreetings,
     isSpecialEvent,
-    eventDateOfTitle,
-    group: group || '',
-    eventType: eventText.includes('イベント') ? eventTypes[eventTypeKeys.find(key => eventText.includes(key)) as keyof EventTypes] : eventText,
-    eventConfig: attendTypes[attendTypeKeys.find(type => subTitle.includes(type)) as keyof AttendTypes] || NONE,
+    eventType: eventText.includes('イベント') && eventTypeText ? eventTypes[eventTypeText] : eventText,
+    eventConfig: eventConfigText ? attendTypes[eventConfigText] : NONE,
   };
 };
 

@@ -1,7 +1,7 @@
 import { launch, PuppeteerLaunchOptions, Browser, Page } from 'puppeteer';
-import { trimAllForObject, fullNumberToHalfNumber, dateStringToDateInfo, analyze } from './calculators';
-import { eventInfoRegex, EVENT_INFOS, isProduction, crawlEventInfoResultDefault } from '../constants';
-import { BrowserInstance, BrowserFunction, CrawlEventInfoResult, BaseCrawlEventInfoResult, DateInfo, EventDateInfos } from '../types';
+import { trimAllForObject, dateStringToDateInfo, analyze, initializeAmebloText } from './calculators';
+import { eventInfoRegex, EVENT_INFOS, isProduction, crawlEventInfoResultDefault, dateInfoDefault, SPLIT_MARK } from '../constants';
+import { BrowserInstance, BrowserFunction, CrawlEventInfoResult, DateInfo, EventInfos, ValueOf } from '../types';
 
 export const defaultOptions: PuppeteerLaunchOptions = {
   args: ['--no-sandbox', '--disable-setuid-sandbox', '--headless', '--disable-gpu'],
@@ -80,7 +80,6 @@ export const useBrowserTransaction = <A, R>(transaction: BrowserFunction<A, R>, 
 export const crawlEventInfo = async (browser: Browser, url: string) => {
   const pages: Page[] = [];
   let baseResults: CrawlEventInfoResult = crawlEventInfoResultDefault;
-  let title: string;
   let ps: string[];
 
   try {
@@ -88,75 +87,95 @@ export const crawlEventInfo = async (browser: Browser, url: string) => {
     pages.push(page);
     await page.goto(url, { waitUntil: 'domcontentloaded' });
 
-    [title, ps] = (await page.evaluate(() => [
-      ([...document.getElementsByClassName('skinArticleTitle')][0] as HTMLElement).innerText,
-      [...document.getElementsByTagName('p')].map(p => p.innerText),
-    ])) as [string, string[]];
+    ps = await page.evaluate(() => [...document.getElementsByTagName('p')].map(p => p.innerText));
   } catch (error) {
     return { pages, errorMessage: String(error) };
   }
 
   try {
-    const ptexts = fullNumberToHalfNumber(ps.join(''));
-    const splitedPs = ptexts.split(eventInfoRegex).filter(Boolean);
+    const [subTitle, ...mains] = initializeAmebloText(ps.join('')).split(eventInfoRegex).filter(Boolean);
+    const splitedSubTitle = subTitle.split(new RegExp(`(\\${SPLIT_MARK})`)).filter(Boolean);
+    const firstSplitMarkIndex = splitedSubTitle.indexOf(SPLIT_MARK);
+    const secondSplitMarkIndex = splitedSubTitle.indexOf(SPLIT_MARK, firstSplitMarkIndex + 1);
 
-    baseResults = {
-      ...baseResults,
-      ...analyze({ title, ptexts }),
-    };
+    if (firstSplitMarkIndex !== -1 && secondSplitMarkIndex !== -1) {
+      const group = splitedSubTitle[firstSplitMarkIndex + 1];
 
-    const { shop, winnersNumber, eventEntryPeriod, ...dates } = Object.entries(EVENT_INFOS).reduce<{ [key: string]: string }>((texts, [info, infoText]) => {
-      const infoIndex = splitedPs.findIndex(innerText => innerText.includes(infoText)) + 1;
+      baseResults = {
+        ...baseResults,
+        group,
+        ...analyze(splitedSubTitle[secondSplitMarkIndex + 1]),
+      };
 
-      texts[info] =
-        infoIndex > 0
-          ? splitedPs[infoIndex]
-              .trim()
-              .split(/◆|場所/g)
-              .filter(Boolean)[0]
-              ?.split('👉')
-              .filter(Boolean)[0]
-              ?.replace(/:|：/g, '')
-              .replace(/\n/g, ' ') || ''
-          : '';
+      const { shop, winnersNumber, eventEntryPeriod, ...dates } = (Object.entries(EVENT_INFOS) as [keyof EventInfos, ValueOf<EventInfos>][]).reduce<{
+        [key in keyof EventInfos | 'eventEntryStartDate' | 'eventDeadline']: string;
+      }>(
+        (texts, [info, infoText]) => {
+          const infoIndex = mains.findIndex(innerText => innerText.includes(infoText)) + 1;
 
-      return texts;
-    }, {});
+          texts[info] =
+            infoIndex > 0
+              ? mains[infoIndex]
+                  .trim()
+                  .split(/◆|場所/g)
+                  .filter(Boolean)[0]
+                  ?.split('👉')
+                  .filter(Boolean)[0]
+                  ?.replace(/\:/g, '') || ''
+              : '';
 
-    baseResults = {
-      ...baseResults,
-      shop,
-      winnersNumber,
-    };
+          return texts;
+        },
+        {
+          shop: '',
+          winnersNumber: '',
+          eventEntryPeriod: '',
+          eventDate: '',
+          depositDeadline: '',
+          winnerAnnouncement: '',
+          eventEntryStartDate: '',
+          eventDeadline: '',
+        },
+      );
 
-    const [eventEntryStartDate, eventDeadline] = eventEntryPeriod.split(/~|〜/g);
+      baseResults = {
+        ...baseResults,
+        shop,
+        winnersNumber,
+      };
 
-    dates.eventEntryStartDate = eventEntryStartDate;
-    dates.eventDeadline = eventDeadline;
+      const [eventEntryStartDate, eventDeadline] = eventEntryPeriod.split(/~/g);
 
-    baseResults = {
-      ...baseResults,
-      ...(Object.entries(dates).reduce<{ [key: string]: DateInfo }>((details, [info, dateString]) => {
-        details[info] = dateStringToDateInfo(
-          dateString
-            .replace(/\s/g, '')
-            .replace(/ー/g, '-')
-            .match(/-?\d.*/)?.[0] || '',
-        );
+      dates.eventEntryStartDate = eventEntryStartDate;
+      dates.eventDeadline = eventDeadline;
 
-        return details;
-      }, {}) as { [key in keyof (EventDateInfos & { eventEntryStartDate: DateInfo; eventDeadline: DateInfo })]: DateInfo }),
-    };
+      baseResults = {
+        ...baseResults,
+        ...(Object.entries(dates) as [keyof typeof dates, string][]).reduce<{ [key in keyof typeof dates]: DateInfo }>(
+          (details, [info, dateString]) => ({
+            ...details,
+            [info]: dateStringToDateInfo(dateString.replace(/\s/g, '').match(/-?\d.*/)?.[0] || ''),
+          }),
+          {
+            eventDate: dateInfoDefault,
+            depositDeadline: dateInfoDefault,
+            winnerAnnouncement: dateInfoDefault,
+            eventEntryStartDate: dateInfoDefault,
+            eventDeadline: dateInfoDefault,
+          },
+        ),
+      };
 
-    const [prices, agencyFees] = ptexts
-      .split('代行手数料')
-      .map(text => text.match(/([0-9]|\s)+円/g)?.map(price => Number(price.replace(/円|\s/g, ''))) || [0, 0]);
+      const [prices, agencyFees] = mains[mains.length - 1]
+        .split('代行手数料')
+        .map(text => text.match(/([0-9]|\s)+円/g)?.map(price => Number(price.replace(/円|\s/g, ''))) || [0, 0]);
 
-    baseResults = {
-      ...baseResults,
-      prices,
-      agencyFees,
-    };
+      baseResults = {
+        ...baseResults,
+        prices,
+        agencyFees,
+      };
+    }
 
     return {
       pages,

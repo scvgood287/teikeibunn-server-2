@@ -172,8 +172,6 @@ export interface Versions {
 }
 
 export interface AnalyzeResult {
-  group: string;
-  eventDateOfTitle: string;
   eventConfig: ValueOf<typeof attendTypes> | typeof NONE;
   eventType: ValueOf<typeof eventTypes> | string;
 
@@ -181,9 +179,10 @@ export interface AnalyzeResult {
   isSpecialEvent: boolean;
 }
 
-export type AnalyzeFunction = ({ title, ptexts }: { title: string; ptexts: string }) => AnalyzeResult;
+export type AnalyzeFunction = (subTitle: string) => AnalyzeResult;
 
 export interface CrawlEventInfoResult extends AnalyzeResult {
+  group: string;
   shop: string;
   winnersNumber: string;
   eventEntryStartDate: DateInfo;
@@ -207,7 +206,6 @@ export interface BaseCrawlEventInfoResult {
   winnerAnnouncement: DateInfo;
 
   group: string;
-  eventDateOfTitle: string;
   eventConfig: ValueOf<typeof attendTypes> | typeof NONE;
   eventType: ValueOf<typeof eventTypes> | string;
 }

@@ -1,4 +1,4 @@
-import { AttendTypes, EventTypes, EventInfos, EventDateInfos, CrawlEventInfoResult, DateInfo, DATE_PATTERN } from '../types';
+import { AttendTypes, EventTypes, EventInfos, EventDateInfos, CrawlEventInfoResult, DateInfo } from '../types';
 import dotenv from 'dotenv';
 
 dotenv.config();
@@ -12,6 +12,7 @@ export const UNIT = 'unit';
 export const ALL = 'all';
 
 export const SPLIT_MARK = '⭐';
+export const P_SPLIT_TEXT = 'P태그INNERTEXT구분용텍스트';
 export const SHOP = '販売店';
 export const WINNERS_NUMBER = '当選人数';
 export const EVENT_DATE = 'イベント日時';
@@ -67,8 +68,8 @@ export const EVENT_INFOS: EventInfos = {
 };
 
 export const versions = {
-  server: '2.0.2',
-  client: '2.0.6',
+  server: '2.0.3',
+  client: '2.0.7',
 };
 
 export const eventInfoRegex = new RegExp(
@@ -80,8 +81,8 @@ export const eventInfoRegex = new RegExp(
 
 // reuseable
 
-export const eventTypeKeys = Object.keys(eventTypes);
-export const attendTypeKeys = Object.keys(attendTypes);
+export const eventTypeKeys = ['ヨントン', 'ビデオ', '対面', 'ラキドロ', '特典', 'SHOWCASE', FAN_MEETING] as const;
+export const attendTypeKeys = ['1:1', 'ユニット', '団体'] as const;
 
 // default
 
@@ -99,7 +100,6 @@ export const crawlEventInfoResultDefault: CrawlEventInfoResult = {
   agencyFees: [],
 
   group: '',
-  eventDateOfTitle: '',
   eventConfig: 'none',
   eventType: '',
 
@@ -119,6 +119,14 @@ export const DATE_PATTERNS = [
   ['day', DATE_PATTERN_DAY],
   ['hour', DATE_PATTERN_HOUR],
   ['minutes', DATE_PATTERN_MINUTES],
+] as const;
+
+export const AMEBLO_JP_TEXT_PATTERNS = [
+  [['ー'], '-'],
+  [['〜'], '~'],
+  [['\n', '　'], ' '],
+  [['：'], ':'],
+  [['！'], '!'],
 ] as const;
 
 export const dateInfoDefault: DateInfo = {

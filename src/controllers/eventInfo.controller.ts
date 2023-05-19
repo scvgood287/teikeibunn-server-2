@@ -45,10 +45,7 @@ const deleteEventInfoCache: AmebloRequestHandler<typeof ALBUM | typeof PRODUCT> 
       throw Error(errorMessage);
     }
 
-    res.status(200).json({
-      success,
-      message: success ? 'Cache Deleted' : 'Cache is Not Existed',
-    });
+    res.status(200).json(success);
   } catch (error) {
     console.error(error);
     res.status(400).json(error);
