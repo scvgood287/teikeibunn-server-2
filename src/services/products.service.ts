@@ -8,18 +8,26 @@ const getProducts = async (urlId: string, cache: CacheTypes) => await getEventIn
 
 const createProducts = async (urlId: string, products: Array<ProductType>) => {
   try {
-    return {
-      createdProducts: await productRepository.saveProducts(
-        await Promise.all(
-          products.map(async ({ options, ...productType }) => {
-            const product = productRepository.createProducts([{ ...productType, urlId }])[0];
-            product.options = await optionRepository.saveOptions(optionRepository.createOptions(options));
+    const isAlreadyCreated = ((await productRepository.getProducts(urlId))?.length || 0) > 0;
 
-            return product;
-          }),
+    if (isAlreadyCreated) {
+      return {
+        createdProducts: [],
+      };
+    } else {
+      return {
+        createdProducts: await productRepository.saveProducts(
+          await Promise.all(
+            products.map(async ({ options, ...productType }) => {
+              const product = productRepository.createProducts([{ ...productType, urlId }])[0];
+              product.options = await optionRepository.saveOptions(optionRepository.createOptions(options));
+
+              return product;
+            }),
+          ),
         ),
-      ),
-    };
+      };
+    }
   } catch (error) {
     return {
       errorMessage: String(error),
