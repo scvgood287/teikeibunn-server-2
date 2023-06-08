@@ -18,18 +18,22 @@ const redisClient = redis.createClient({
     : {}),
 });
 
+redisClient.once('ready', () => {
+  console.info('redis is running');
+});
+redisClient.once('connect', () => {
+  console.info('Redis connected!');
+});
+
 redisClient.on('ready', () => {
   global.isRedisReady = true;
-  console.info('redis is running');
 });
 redisClient.on('connect', () => {
   global.isRedisReady = true;
-  console.info('Redis connected!');
 });
-redisClient.on('error', err => {
-  global.isRedisReady = false;
 
-  console.error('Redis Client Error', err);
+redisClient.on('error', () => {
+  global.isRedisReady = false;
 });
 
 export default redisClient;
