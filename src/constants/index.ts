@@ -73,7 +73,7 @@ export const EVENT_INFOS: EventInfos = {
 
 export const versions = {
   server: '2.0.5',
-  client: '2.1.1',
+  client: '2.1.2',
 };
 
 export const eventInfoRegex = new RegExp(
