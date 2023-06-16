@@ -94,87 +94,84 @@ export const crawlEventInfo = async (browser: Browser, url: string) => {
 
   try {
     const [subTitle, ...mains] = initializeAmebloText(ps.join('')).split(eventInfoRegex).filter(Boolean);
-    const splitedSubTitle = subTitle.split(new RegExp(`(\\${SPLIT_MARK})`)).filter(Boolean);
-    const firstSplitMarkIndex = splitedSubTitle.indexOf(SPLIT_MARK);
-    const secondSplitMarkIndex = splitedSubTitle.indexOf(SPLIT_MARK, firstSplitMarkIndex + 1);
 
-    if (firstSplitMarkIndex !== -1 && secondSplitMarkIndex !== -1) {
-      const group = splitedSubTitle[firstSplitMarkIndex + 1];
+    if (subTitle && mains && mains.length) {
+      const splitedSubTitle = subTitle.split(new RegExp(`(\\${SPLIT_MARK})`)).filter(Boolean);
+      const firstSplitMarkIndex = splitedSubTitle.indexOf(SPLIT_MARK);
+      const secondSplitMarkIndex = splitedSubTitle.indexOf(SPLIT_MARK, firstSplitMarkIndex + 1);
 
-      baseResults = {
-        ...baseResults,
-        group,
-        ...analyze(splitedSubTitle[secondSplitMarkIndex + 1]),
-      };
+      if (firstSplitMarkIndex !== -1 && secondSplitMarkIndex !== -1) {
+        const group = splitedSubTitle[firstSplitMarkIndex + 1];
 
-      const { shop, winnersNumber, eventEntryPeriod, ...dates } = (Object.entries(EVENT_INFOS) as [keyof EventInfos, ValueOf<EventInfos>][]).reduce<{
-        [key in keyof EventInfos | 'eventEntryStartDate' | 'eventDeadline']: string;
-      }>(
-        (texts, [info, infoText]) => {
-          const infoIndex = mains.findIndex(innerText => innerText.includes(infoText)) + 1;
+        baseResults = {
+          ...baseResults,
+          group,
+          ...analyze(splitedSubTitle[secondSplitMarkIndex + 1]),
+        };
 
-          texts[info] =
-            infoIndex > 0
-              ? mains[infoIndex]
-                  .trim()
-                  .split(/◆|場所/g)
-                  .filter(Boolean)[0]
-                  ?.split('👉')
-                  .filter(Boolean)[0]
-                  ?.replace(/\:/g, '') || ''
-              : '';
-
-          return texts;
-        },
-        {
-          shop: '',
-          winnersNumber: '',
-          eventEntryPeriod: '',
-          eventDate: '',
-          depositDeadline: '',
-          winnerAnnouncement: '',
-          eventEntryStartDate: '',
-          eventDeadline: '',
-        },
-      );
-
-      baseResults = {
-        ...baseResults,
-        shop,
-        winnersNumber,
-      };
-
-      const [eventEntryStartDate, eventDeadline] = eventEntryPeriod.split(/~/g);
-
-      dates.eventEntryStartDate = eventEntryStartDate;
-      dates.eventDeadline = eventDeadline;
-
-      baseResults = {
-        ...baseResults,
-        ...(Object.entries(dates) as [keyof typeof dates, string][]).reduce<{ [key in keyof typeof dates]: DateInfo }>(
-          (details, [info, dateString]) => ({
-            ...details,
-            [info]: dateStringToDateInfo(dateString.replace(/\s/g, '').match(/-?\d.*/)?.[0] || ''),
+        const { earlyEnd, place, shop, winnersNumber, eventEntryPeriod, ...dates } = (
+          Object.entries(EVENT_INFOS) as [keyof EventInfos, ValueOf<EventInfos>][]
+        ).reduce<{
+          [key in keyof EventInfos | 'eventEntryStartDate' | 'eventDeadline']: string;
+        }>(
+          (texts, [info, infoText]) => ({
+            ...texts,
+            [info]: mains[mains.findIndex(innerText => innerText.includes(infoText)) + 1 || -1]?.replace(/\:|◆/g, '').replace(/👉/g, '\n').trim() || '',
           }),
           {
-            eventDate: dateInfoDefault,
-            depositDeadline: dateInfoDefault,
-            winnerAnnouncement: dateInfoDefault,
-            eventEntryStartDate: dateInfoDefault,
-            eventDeadline: dateInfoDefault,
+            earlyEnd: '',
+            shop: '',
+            place: '',
+            winnersNumber: '',
+            eventEntryPeriod: '',
+            eventDate: '',
+            depositDeadline: '',
+            winnerAnnouncement: '',
+            eventEntryStartDate: '',
+            eventDeadline: '',
           },
-        ),
-      };
+        );
 
-      const [prices, agencyFees] = mains[mains.length - 1]
-        .split('代行手数料')
-        .map(text => text.match(/([0-9]|\s)+円/g)?.map(price => Number(price.replace(/円|\s/g, ''))) || [0, 0]);
+        baseResults = {
+          ...baseResults,
+          earlyEnd,
+          place,
+          shop,
+          winnersNumber,
+        };
 
-      baseResults = {
-        ...baseResults,
-        prices,
-        agencyFees,
-      };
+        const [eventEntryStartDate, eventDeadline] = eventEntryPeriod.split(/~/g);
+
+        dates.eventEntryStartDate = eventEntryStartDate;
+        dates.eventDeadline = eventDeadline;
+
+        baseResults = {
+          ...baseResults,
+          ...(Object.entries(dates) as [keyof typeof dates, string][]).reduce<{ [key in keyof typeof dates]: DateInfo }>(
+            (details, [info, dateString]) => ({
+              ...details,
+              [info]: dateStringToDateInfo(dateString.replace(/\s/g, '').match(/-?\d.*/)?.[0] || ''),
+            }),
+            {
+              eventDate: dateInfoDefault,
+              depositDeadline: dateInfoDefault,
+              winnerAnnouncement: dateInfoDefault,
+              eventEntryStartDate: dateInfoDefault,
+              eventDeadline: dateInfoDefault,
+            },
+          ),
+        };
+
+        const [prices, agencyFees] = mains[mains.length - 1]
+          .split('代行手数料')
+          .map(text => text.match(/([0-9]|\s)+円/g)?.map(price => Number(price.replace(/円|\s/g, ''))) || [0, 0]);
+
+        baseResults = {
+          ...baseResults,
+          prices,
+          agencyFees,
+        };
+      }
     }
 
     return {

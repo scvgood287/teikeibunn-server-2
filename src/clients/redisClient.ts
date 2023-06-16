@@ -21,13 +21,19 @@ const redisClient = redis.createClient({
 redisClient.once('ready', () => {
   console.info('redis is running');
 });
+
 redisClient.once('connect', () => {
   console.info('Redis connected!');
+});
+
+redisClient.once('error', () => {
+  console.info('Redis errored!');
 });
 
 redisClient.on('ready', () => {
   global.isRedisReady = true;
 });
+
 redisClient.on('connect', () => {
   global.isRedisReady = true;
 });

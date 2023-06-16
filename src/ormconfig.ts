@@ -2,7 +2,7 @@ import { DataSource, DataSourceOptions } from 'typeorm';
 import { isProduction } from './constants';
 import { Option, Product } from './entities';
 
-const config: DataSourceOptions = true
+const config: DataSourceOptions = isProduction
   ? {
       type: 'postgres',
       url: process.env.DATABASE_URL,
