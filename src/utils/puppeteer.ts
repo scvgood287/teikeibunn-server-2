@@ -79,20 +79,42 @@ export const useBrowserTransaction = <A, R>(transaction: BrowserFunction<A, R>, 
 
 export const crawlEventInfo = async (browser: Browser, url: string) => {
   const pages: Page[] = [];
-  let baseResults: CrawlEventInfoResult = crawlEventInfoResultDefault;
-  let ps: string[];
+  const results: {
+    pages: Page[];
+    result: CrawlEventInfoResult;
+    errorMessage?: string;
+  } = {
+    pages: [],
+    result: {
+      shop: '',
+      earlyEnd: '',
+      place: '',
+      winnersNumber: '',
+      eventEntryStartDate: { year: 0, month: 0, day: 0, hour: 0, minutes: 0 },
+      eventDeadline: { year: 0, month: 0, day: 0, hour: 0, minutes: 0 },
+
+      eventDate: { year: 0, month: 0, day: 0, hour: 0, minutes: 0 },
+      depositDeadline: { year: 0, month: 0, day: 0, hour: 0, minutes: 0 },
+      winnerAnnouncement: { year: 0, month: 0, day: 0, hour: 0, minutes: 0 },
+
+      prices: [],
+      agencyFees: [],
+
+      group: '',
+      eventConfig: 'none',
+      eventType: '',
+
+      isSeasonsGreetings: false,
+      isSpecialEvent: false,
+    },
+  };
 
   try {
     const page = await browser.newPage();
     pages.push(page);
     await page.goto(url, { waitUntil: 'domcontentloaded' });
 
-    ps = await page.evaluate(() => [...document.getElementsByTagName('p')].map(p => p.innerText));
-  } catch (error) {
-    return { pages, errorMessage: String(error) };
-  }
-
-  try {
+    const ps = await page.evaluate(() => [...document.getElementsByTagName('p')].map(p => p.innerText));
     const [subTitle, ...mains] = initializeAmebloText(ps.join('')).split(eventInfoRegex).filter(Boolean);
 
     if (subTitle && mains && mains.length) {
@@ -103,8 +125,8 @@ export const crawlEventInfo = async (browser: Browser, url: string) => {
       if (firstSplitMarkIndex !== -1 && secondSplitMarkIndex !== -1) {
         const group = splitedSubTitle[firstSplitMarkIndex + 1];
 
-        baseResults = {
-          ...baseResults,
+        results.result = {
+          ...results.result,
           group,
           ...analyze(splitedSubTitle[secondSplitMarkIndex + 1]),
         };
@@ -132,8 +154,8 @@ export const crawlEventInfo = async (browser: Browser, url: string) => {
           },
         );
 
-        baseResults = {
-          ...baseResults,
+        results.result = {
+          ...results.result,
           earlyEnd,
           place,
           shop,
@@ -145,8 +167,8 @@ export const crawlEventInfo = async (browser: Browser, url: string) => {
         dates.eventEntryStartDate = eventEntryStartDate;
         dates.eventDeadline = eventDeadline;
 
-        baseResults = {
-          ...baseResults,
+        results.result = {
+          ...results.result,
           ...(Object.entries(dates) as [keyof typeof dates, string][]).reduce<{ [key in keyof typeof dates]: DateInfo }>(
             (details, [info, dateString]) => ({
               ...details,
@@ -166,21 +188,22 @@ export const crawlEventInfo = async (browser: Browser, url: string) => {
           .split('代行手数料')
           .map(text => text.match(/([0-9]|\s)+円/g)?.map(price => Number(price.replace(/円|\s/g, ''))) || [0, 0]);
 
-        baseResults = {
-          ...baseResults,
+        results.result = {
+          ...results.result,
           prices,
           agencyFees,
         };
+      } else {
+        throw Error(`Doesn't Exist ${SPLIT_MARK} In SubTitle`);
       }
+    } else {
+      throw Error('Not Our Ameblo Or Invalid URL');
     }
-
-    return {
-      pages,
-      result: trimAllForObject<CrawlEventInfoResult>(baseResults),
-    };
   } catch (error) {
-    return { pages, result: trimAllForObject<Partial<CrawlEventInfoResult>>(baseResults), errorMessage: String(error) };
+    results.errorMessage = String(error);
   }
+
+  return results;
 };
 
 export const useCrawlEventInfo = useBrowserTransaction(crawlEventInfo);

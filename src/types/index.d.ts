@@ -106,7 +106,7 @@ export interface GetEventInfoAndProductsResult {
     errorMessage: string;
     result:
       | {
-          eventInfo: Partial<CrawlEventInfoResult>;
+          eventInfo: CrawlEventInfoResult;
           productType: typeof PRODUCT | typeof ALBUM;
         }
       | {};
@@ -130,7 +130,7 @@ export type BrowserInstance = {
   browser: Browser;
 };
 
-export type BrowserFunction<A, R> = (browser: Browser, args: A) => Promise<{ pages: Page[]; result?: R; errorMessage?: string }>;
+export type BrowserFunction<A, R> = (browser: Browser, args: A) => Promise<{ pages: Page[]; result: R; errorMessage?: string }>;
 
 export type DateInfo = {
   year: number;
@@ -218,7 +218,7 @@ export interface BaseCrawlEventInfoResult {
 
 export interface EventInfo<T extends typeof ALBUM | typeof PRODUCT> {
   productType: T;
-  eventInfo: Partial<CrawlEventInfoResult>;
+  eventInfo: CrawlEventInfoResult;
 }
 
 export type DATE_PATTERN =

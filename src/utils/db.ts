@@ -14,13 +14,13 @@ export const getEventInfoOrProductsResult = async <T extends keyof GetEventInfoA
   const products = cache.products?.products || (await productRepository.getProducts(urlId));
 
   return crawlResult.errorMessage
-    ? { saveCache: false, errorMessage: crawlResult.errorMessage, result: {} }
-    : (await setEventInfoAndProductsCache(urlId, crawlResult.result as Partial<CrawlEventInfoResult>, products))[type];
+    ? { saveCache: false, errorMessage: crawlResult.errorMessage, result: crawlResult.result }
+    : (await setEventInfoAndProductsCache(urlId, crawlResult.result, products))[type];
 };
 
 export const setEventInfoAndProductsCache = async (
   urlId: string,
-  eventInfo: Partial<CrawlEventInfoResult>,
+  eventInfo: CrawlEventInfoResult,
   products: Product[],
 ): Promise<GetEventInfoAndProductsResult> => {
   const results: GetEventInfoAndProductsResult = {
