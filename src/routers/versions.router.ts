@@ -63,20 +63,20 @@ const metadataResponse: {
     // form 작성 아직
     form: {
       firstEntryForEvent: {
-        name: '',
-        url: '',
+        name: '이벤트 응모 초회',
+        url: 'https://docs.google.com/forms/d/1h68gUQlXbDb1ceS8oPHP89c-QyN1w0RSh8OyrSh75gk/edit',
       },
       firstEntryForSpecialGoods: {
-        name: '',
-        url: '',
+        name: '특전대행 초회',
+        url: 'https://docs.google.com/forms/d/1sWHutGgI9nMNnkPUUyHRc6873zygYkp7fXFbVM5wYf0/edit',
       },
       additionalEntryForEvent: {
-        name: '',
-        url: '',
+        name: '이벤트 응모 추가',
+        url: 'https://docs.google.com/forms/d/1a3jrKBxh8LG4PMbCoJRLn2n3QxtTtXvDulpeVTGSLPw/edit',
       },
       additionalEntryForSpecialGoods: {
-        name: '',
-        url: '',
+        name: '특전대행 추가',
+        url: 'https://docs.google.com/forms/d/1SgGUmHON-KNMJVjuhJRbdMUKU_KZ7kecUa1NDypozs8/edit',
       },
     },
   },
