@@ -173,20 +173,26 @@ export const crawlEventInfo = async (browser: Browser, url: string) => {
           agencyFees,
         };
 
-        const specialGoodsTexts = ptext.split(/(👉[^👉特典:]*特典\s*:\s*)/).filter(Boolean);
+        const specialGoodsKeyPattern = '[^👉特典:：]*特典';
+        const specialGoodsPattern = `👉${specialGoodsKeyPattern}\\s*[:：]\\s*`;
+        const specialGoodsTexts = ptext.split(new RegExp(`(${specialGoodsPattern})`)).filter(Boolean);
 
         specialGoodsTexts[specialGoodsTexts.length - 1] =
-          initializeAmebloText(specialGoodsTexts[specialGoodsTexts.length - 1]).split(new RegExp(`\\s{2,}[^\\s]+\\s*:\\s*${prices[0]}円`))[0] || '';
+          initializeAmebloText(specialGoodsTexts[specialGoodsTexts.length - 1]).split(new RegExp(`\\s+[^\\s]+\\s*:\\s*${prices[0]}円`))[0] || '';
 
         baseResults = {
           ...baseResults,
           specialGoods: specialGoodsTexts
-            .slice(specialGoodsTexts.findIndex(specialGoodsText => specialGoodsText.match(/^👉[^👉特典:]*特典\s*:\s*$/)))
+            .slice(specialGoodsTexts.findIndex(specialGoodsText => specialGoodsText.match(new RegExp(`^${specialGoodsPattern}$`))))
             .reduce<Array<[string, string]>>((acc, curr, i) => {
               if (i % 2) {
-                acc[acc.length - 1][1] += [initializeAmebloText(curr).replace(/\s{2,}/g, ' /// ')];
+                acc[acc.length - 1][1] += [
+                  initializeAmebloText(curr)
+                    .trim()
+                    .replace(/\s{2,}/g, ' /// '),
+                ];
               } else {
-                acc[acc.length] = [initializeAmebloText(curr.match(/[^👉特典:]*特典/)?.[0] || ''), ''];
+                acc[acc.length] = [initializeAmebloText(curr.match(new RegExp(specialGoodsKeyPattern))?.[0] || ''), ''];
               }
 
               return acc;
