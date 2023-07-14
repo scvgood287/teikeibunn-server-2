@@ -93,7 +93,8 @@ export const crawlEventInfo = async (browser: Browser, url: string) => {
   }
 
   try {
-    const [subTitle, ...mains] = initializeAmebloText(ps.join('')).split(eventInfoRegex).filter(Boolean);
+    const ptext = ps.join('');
+    const [subTitle, ...mains] = initializeAmebloText(ptext).split(eventInfoRegex).filter(Boolean);
 
     if (subTitle && mains && mains.length) {
       const splitedSubTitle = subTitle.split(new RegExp(`(\\${SPLIT_MARK})`)).filter(Boolean);
@@ -162,14 +163,33 @@ export const crawlEventInfo = async (browser: Browser, url: string) => {
           ),
         };
 
+        const specialGoodsTexts = ptext.split(/(👉[^👉特典:]*特典\s*:\s*)/).filter(Boolean);
         const [prices, agencyFees] = mains[mains.length - 1]
           .split('代行手数料')
           .map(text => text.match(/([0-9]|\s)+円/g)?.map(price => Number(price.replace(/円|\s/g, ''))) || [0, 0]);
+
+        specialGoodsTexts[specialGoodsTexts.length - 1] = initializeAmebloText(specialGoodsTexts[specialGoodsTexts.length - 1]).split(
+          new RegExp(`\\s{2,}[^\\s]+\\s*:\\s*${prices[0]}円`),
+        )[0];
 
         baseResults = {
           ...baseResults,
           prices,
           agencyFees,
+          specialGoods: specialGoodsTexts
+            .slice(specialGoodsTexts.findIndex(specialGoodsText => specialGoodsText.match(/^👉[^👉特典:]*特典\s*:\s*$/)))
+            .reduce<Array<[string, string]>>((acc, curr) => {
+              const specialGoodsText = curr.match(/[^👉特典:]*特典/)?.[0];
+
+              if (specialGoodsText) {
+                acc[acc.length] = [initializeAmebloText(specialGoodsText), ''];
+              } else {
+                acc[acc.length - 1][1] += [initializeAmebloText(curr).replace(/\s{2,}/g, ' / ')];
+              }
+
+              return acc;
+            }, [])
+            .reduce<{ [key: string]: string }>((acc, [key, value]) => ({ ...acc, [key]: value }), {}),
         };
       }
     }

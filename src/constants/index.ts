@@ -72,8 +72,8 @@ export const EVENT_INFOS: EventInfos = {
 };
 
 export const versions = {
-  server: '2.0.5',
-  client: '2.1.4',
+  server: '2.0.6',
+  client: '2.1.5',
 };
 
 export const eventInfoRegex = new RegExp(
@@ -104,6 +104,7 @@ export const crawlEventInfoResultDefault: CrawlEventInfoResult = {
 
   prices: [],
   agencyFees: [],
+  specialGoods: {},
 
   group: '',
   eventConfig: 'none',

@@ -200,6 +200,9 @@ export interface CrawlEventInfoResult extends AnalyzeResult {
 
   prices: Array<number>;
   agencyFees: Array<number>;
+  specialGoods: {
+    [key: string]: string;
+  };
 }
 
 export interface BaseCrawlEventInfoResult {
