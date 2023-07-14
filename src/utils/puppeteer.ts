@@ -182,13 +182,11 @@ export const crawlEventInfo = async (browser: Browser, url: string) => {
           ...baseResults,
           specialGoods: specialGoodsTexts
             .slice(specialGoodsTexts.findIndex(specialGoodsText => specialGoodsText.match(/^👉[^👉特典:]*特典\s*:\s*$/)))
-            .reduce<Array<[string, string]>>((acc, curr) => {
-              const specialGoodsText = curr.match(/[^👉特典:]*特典/)?.[0];
-
-              if (specialGoodsText) {
-                acc[acc.length] = [initializeAmebloText(specialGoodsText), ''];
-              } else {
+            .reduce<Array<[string, string]>>((acc, curr, i) => {
+              if (i % 2) {
                 acc[acc.length - 1][1] += [initializeAmebloText(curr).replace(/\s{2,}/g, ' /// ')];
+              } else {
+                acc[acc.length] = [initializeAmebloText(curr.match(/[^👉特典:]*特典/)?.[0] || ''), ''];
               }
 
               return acc;
