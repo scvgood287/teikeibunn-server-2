@@ -184,7 +184,7 @@ export const crawlEventInfo = async (browser: Browser, url: string) => {
               if (specialGoodsText) {
                 acc[acc.length] = [initializeAmebloText(specialGoodsText), ''];
               } else {
-                acc[acc.length - 1][1] += [initializeAmebloText(curr).replace(/\s{2,}/g, ' // ')];
+                acc[acc.length - 1][1] += [initializeAmebloText(curr).replace(/\s{2,}/g, ' /// ')];
               }
 
               return acc;
