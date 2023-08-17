@@ -114,10 +114,10 @@ export const crawlEventInfo = async (browser: Browser, url: string) => {
       () =>
         [
           [...document.getElementsByTagName('p')].map(p => p.innerText),
-          (document.querySelector('span.articleTheme') as HTMLSpanElement).innerText
+          (document.querySelector('span.articleTheme') as HTMLSpanElement | null)?.innerText
             .replace(/(\s|　)+/g, ' ')
             .replace(/テーマ|：|:/g, '')
-            .trim(),
+            .trim() || '',
         ] as const,
     );
   } catch (error) {
