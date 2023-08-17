@@ -187,6 +187,7 @@ export type AnalyzeFunction = (subTitle: string) => AnalyzeResult;
 
 export interface CrawlEventInfoResult extends AnalyzeResult {
   theme: string;
+
   group: string;
   shop: string;
   earlyEnd: string;
