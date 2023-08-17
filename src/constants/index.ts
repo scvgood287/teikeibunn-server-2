@@ -72,8 +72,8 @@ export const EVENT_INFOS: EventInfos = {
 };
 
 export const versions = {
-  server: '2.0.6',
-  client: '2.1.8',
+  server: '2.0.7',
+  client: '2.1.9',
 };
 
 export const eventInfoRegex = new RegExp(
@@ -91,6 +91,7 @@ export const attendTypeKeys = ['1:1', 'ユニット', '団体'] as const;
 // default
 
 export const crawlEventInfoResultDefault: CrawlEventInfoResult = {
+  theme: '',
   shop: '',
   earlyEnd: '',
   place: '',

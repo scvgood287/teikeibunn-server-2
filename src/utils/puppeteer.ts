@@ -1,7 +1,7 @@
 import { launch, PuppeteerLaunchOptions, Browser, Page } from 'puppeteer';
 import { trimAllForObject, dateStringToDateInfo, analyze, initializeAmebloText } from './calculators';
-import { eventInfoRegex, EVENT_INFOS, isProduction, crawlEventInfoResultDefault, dateInfoDefault, SPLIT_MARK } from '../constants';
-import { BrowserInstance, BrowserFunction, CrawlEventInfoResult, DateInfo, EventInfos, ValueOf } from '../types';
+import { eventInfoRegex, EVENT_INFOS, dateInfoDefault, SPLIT_MARK } from '../constants';
+import { BrowserFunction, CrawlEventInfoResult, DateInfo, EventInfos, ValueOf } from '../types';
 
 export const defaultOptions: PuppeteerLaunchOptions = {
   args: ['--no-sandbox', '--disable-setuid-sandbox', '--headless', '--disable-gpu'],
@@ -79,7 +79,30 @@ export const useBrowserTransaction = <A, R>(transaction: BrowserFunction<A, R>, 
 
 export const crawlEventInfo = async (browser: Browser, url: string) => {
   const pages: Page[] = [];
-  let baseResults: CrawlEventInfoResult = crawlEventInfoResultDefault;
+  let baseResults: CrawlEventInfoResult = {
+    theme: '',
+    shop: '',
+    earlyEnd: '',
+    place: '',
+    winnersNumber: '',
+    eventEntryStartDate: { year: 0, month: 0, day: 0, hour: 0, minutes: 0 },
+    eventDeadline: { year: 0, month: 0, day: 0, hour: 0, minutes: 0 },
+
+    eventDate: { year: 0, month: 0, day: 0, hour: 0, minutes: 0 },
+    depositDeadline: { year: 0, month: 0, day: 0, hour: 0, minutes: 0 },
+    winnerAnnouncement: { year: 0, month: 0, day: 0, hour: 0, minutes: 0 },
+
+    prices: [],
+    agencyFees: [],
+    specialGoods: {},
+
+    group: '',
+    eventConfig: 'none',
+    eventType: '',
+
+    isSeasonsGreetings: false,
+    isSpecialEvent: false,
+  };
   let ps: string[];
 
   try {
@@ -87,7 +110,16 @@ export const crawlEventInfo = async (browser: Browser, url: string) => {
     pages.push(page);
     await page.goto(url, { waitUntil: 'domcontentloaded' });
 
-    ps = await page.evaluate(() => [...document.getElementsByTagName('p')].map(p => p.innerText));
+    [ps, baseResults.theme] = await page.evaluate(
+      () =>
+        [
+          [...document.getElementsByTagName('p')].map(p => p.innerText),
+          (document.querySelector('span.articleTheme') as HTMLSpanElement).innerText
+            .replace(/(\s|　)+/g, ' ')
+            .replace(/テーマ|：|:/g, '')
+            .trim(),
+        ] as const,
+    );
   } catch (error) {
     return { pages, errorMessage: String(error) };
   }
