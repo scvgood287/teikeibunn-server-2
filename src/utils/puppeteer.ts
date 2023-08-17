@@ -110,7 +110,6 @@ export const crawlEventInfo = async (browser: Browser, url: string) => {
     pages.push(page);
     await page.goto(url, { waitUntil: 'domcontentloaded' });
 
-    await page.waitForSelector('p');
     await page.waitForSelector('span.articleTheme');
 
     [ps, baseResults.theme] = await page.evaluate(
