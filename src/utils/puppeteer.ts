@@ -84,6 +84,7 @@ export const crawlEventInfo = async (browser: Browser, url: string) => {
     shop: '',
     earlyEnd: '',
     significant: '',
+    extraGoods: '',
     place: '',
     winnersNumber: '',
     eventEntryStartDate: { year: 0, month: 0, day: 0, hour: 0, minutes: 0 },
@@ -145,7 +146,7 @@ export const crawlEventInfo = async (browser: Browser, url: string) => {
           ...analyze(splitedSubTitle[secondSplitMarkIndex + 1]),
         };
 
-        const { earlyEnd, place, shop, winnersNumber, eventEntryPeriod, significant, ...dates } = (
+        const { earlyEnd, place, shop, winnersNumber, eventEntryPeriod, significant, extraGoods, ...dates } = (
           Object.entries(EVENT_INFOS) as [keyof EventInfos, ValueOf<EventInfos>][]
         ).reduce<{
           [key in keyof EventInfos | 'eventEntryStartDate' | 'eventDeadline']: string;
@@ -157,6 +158,7 @@ export const crawlEventInfo = async (browser: Browser, url: string) => {
           {
             earlyEnd: '',
             significant: '',
+            extraGoods: '',
             shop: '',
             place: '',
             winnersNumber: '',
@@ -176,6 +178,7 @@ export const crawlEventInfo = async (browser: Browser, url: string) => {
           shop,
           winnersNumber,
           significant,
+          extraGoods,
         };
 
         const [eventEntryStartDate, eventDeadline] = eventEntryPeriod.split(/~/g);

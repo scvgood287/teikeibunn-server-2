@@ -30,6 +30,7 @@ import {
   EARLY_END,
   PLACE,
   SIGNIFICANT,
+  EXTRA_GOODS,
 } from '../constants';
 
 declare global {
@@ -166,6 +167,7 @@ export type EventDateInfos = {
 export interface EventInfos extends EventDateInfos {
   earlyEnd: typeof EARLY_END;
   significant: typeof SIGNIFICANT;
+  extraGoods: typeof EXTRA_GOODS;
   place: typeof PLACE;
   shop: typeof SHOP;
   winnersNumber: typeof WINNERS_NUMBER;
@@ -194,6 +196,7 @@ export interface CrawlEventInfoResult extends AnalyzeResult {
   shop: string;
   earlyEnd: string;
   significant: string;
+  extraGoods: string;
   place: string;
   winnersNumber: string;
   eventEntryStartDate: DateInfo;

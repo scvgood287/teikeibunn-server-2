@@ -17,6 +17,7 @@ export const SHOP = '販売店';
 export const PLACE = '場所';
 export const EARLY_END = '⚠早期締め切り⚠';
 export const SIGNIFICANT = '⚠確認事項⚠';
+export const EXTRA_GOODS = 'イベント特典';
 export const WINNERS_NUMBER = '当選人数';
 export const EVENT_DATE = 'イベント日時';
 export const EVENT_ENTRY_PERIOD = 'イベント応募期限';
@@ -66,6 +67,7 @@ export const EVENT_DATE_INFOS: EventDateInfos = {
 export const EVENT_INFOS: EventInfos = {
   earlyEnd: EARLY_END,
   significant: SIGNIFICANT,
+  extraGoods: EXTRA_GOODS,
   shop: SHOP,
   place: PLACE,
   winnersNumber: WINNERS_NUMBER,
@@ -97,6 +99,7 @@ export const crawlEventInfoResultDefault: CrawlEventInfoResult = {
   shop: '',
   earlyEnd: '',
   significant: '',
+  extraGoods: '',
   place: '',
   winnersNumber: '',
   eventEntryStartDate: { year: 0, month: 0, day: 0, hour: 0, minutes: 0 },
