@@ -175,6 +175,7 @@ export const crawlEventInfo = async (browser: Browser, url: string) => {
           place,
           shop,
           winnersNumber,
+          significant,
         };
 
         const [eventEntryStartDate, eventDeadline] = eventEntryPeriod.split(/~/g);
