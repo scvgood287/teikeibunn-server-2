@@ -16,6 +16,7 @@ export const P_SPLIT_TEXT = 'P태그INNERTEXT구분용텍스트';
 export const SHOP = '販売店';
 export const PLACE = '場所';
 export const EARLY_END = '⚠早期締め切り⚠';
+export const SIGNIFICANT = '⚠特記事項⚠';
 export const WINNERS_NUMBER = '当選人数';
 export const EVENT_DATE = 'イベント日時';
 export const EVENT_ENTRY_PERIOD = 'イベント応募期限';
@@ -64,6 +65,7 @@ export const EVENT_DATE_INFOS: EventDateInfos = {
 
 export const EVENT_INFOS: EventInfos = {
   earlyEnd: EARLY_END,
+  significant: SIGNIFICANT,
   shop: SHOP,
   place: PLACE,
   winnersNumber: WINNERS_NUMBER,
@@ -72,8 +74,8 @@ export const EVENT_INFOS: EventInfos = {
 };
 
 export const versions = {
-  server: '2.0.7',
-  client: '2.2.0',
+  server: '2.0.8',
+  client: '2.2.1',
 };
 
 export const eventInfoRegex = new RegExp(
@@ -94,6 +96,7 @@ export const crawlEventInfoResultDefault: CrawlEventInfoResult = {
   theme: '',
   shop: '',
   earlyEnd: '',
+  significant: '',
   place: '',
   winnersNumber: '',
   eventEntryStartDate: { year: 0, month: 0, day: 0, hour: 0, minutes: 0 },

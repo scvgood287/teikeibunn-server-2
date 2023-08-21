@@ -29,6 +29,7 @@ import {
   DATE_PATTERN_MINUTES,
   EARLY_END,
   PLACE,
+  SIGNIFICANT,
 } from '../constants';
 
 declare global {
@@ -164,6 +165,7 @@ export type EventDateInfos = {
 
 export interface EventInfos extends EventDateInfos {
   earlyEnd: typeof EARLY_END;
+  significant: typeof SIGNIFICANT;
   place: typeof PLACE;
   shop: typeof SHOP;
   winnersNumber: typeof WINNERS_NUMBER;
@@ -191,6 +193,7 @@ export interface CrawlEventInfoResult extends AnalyzeResult {
   group: string;
   shop: string;
   earlyEnd: string;
+  significant: string;
   place: string;
   winnersNumber: string;
   eventEntryStartDate: DateInfo;
