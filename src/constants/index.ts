@@ -13,7 +13,7 @@ export const ALL = 'all';
 
 export const SPLIT_MARK = '⭐';
 export const P_SPLIT_TEXT = 'P태그INNERTEXT구분용텍스트';
-export const SHOP = '販売店';
+export const SHOP = '販売店:';
 export const PLACE = '場所';
 export const EARLY_END = '⚠早期締め切り⚠';
 export const SIGNIFICANT = '⚠確認事項⚠';
@@ -76,7 +76,7 @@ export const EVENT_INFOS: EventInfos = {
 };
 
 export const versions = {
-  server: '2.0.8',
+  server: '2.0.9',
   client: '2.2.6',
 };
 
